@@ -1,0 +1,1 @@
+# Use this folder to configure ci-cd pipeline or to set other deployment related configs
