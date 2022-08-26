@@ -1,0 +1,14 @@
+{
+  "eslint.workingDirectories": ["./source-code/client"],
+  "eslint.validate": [
+    "javascript",
+    "javascriptreact",
+    "typescript",
+    "typescriptreact"
+  ],
+  "editor.codeActionsOnSave": {
+    "source.fixAll": true
+  },
+  "eslint.codeActionsOnSave.mode": "all",
+  "editor.tabSize": 2
+}
