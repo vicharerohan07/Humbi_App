@@ -1,0 +1,174 @@
+.dashboard-container {
+  background-color: #023047;
+  // background-color: #023047;
+  display: flex !important;
+  padding: 0px !important;
+  max-width: 100% !important;
+  flex-direction: column;
+  height: 100vh;
+
+  .navbar {
+    width: 100%;
+    height: fit-content;
+    background-color: #023047;
+    // background-color: #023047;
+    padding-inline: 16px;
+    box-shadow: none;
+
+    .tabbar {
+      .MuiButton-root {
+        margin: 0px 8px 0px 0px !important;
+        border-radius: 4px !important;
+        padding: 16px 4px 12px 4px !important;
+      }
+
+      .btn-selected {
+        border-bottom: 4px solid #fb9017;
+      }
+    }
+  }
+
+  .main-content {
+    display: flex;
+    flex-direction: row;
+    height: 100%;
+    padding: 10px 16px 16px 10px;
+    column-gap: 10px;
+    overflow: hidden;
+
+    .filter-section {
+      display: flex;
+      flex-direction: column;
+      min-width: 300px;
+      max-height: 100%;
+      border-radius: 4px !important;
+      background-color: #023047;
+      // background-color: #023047;
+      overflow-y: auto;
+      padding: 0px 12px 12px 12px;
+
+      .accordion {
+        background-color: #126782;
+        margin: 0px !important;
+
+        .summary {
+          min-height: 48px;
+          color: #f0efeb;
+
+          .summary-icon {
+            color: #f0efeb;
+          }
+
+          .MuiTypography-root {
+            font-weight: 700 !important;
+          }
+
+          .MuiAccordionSummary-content {
+            margin: 12px 0px !important;
+          }
+        }
+
+        .detail {
+          display: flex;
+          flex-direction: column;
+          border-radius: 3px !important;
+          row-gap: 2px;
+          padding: 8px 8px 16px 8px;
+          background-color: #f0efeb;
+          color: #555;
+
+          .filter-container {
+            display: flex;
+            flex-direction: column;
+            row-gap: 2px;
+            justify-content: center;
+            align-items: left;
+            margin: 8px;
+            width: calc(100% - 16px);
+
+            .filter-label {
+              padding-left: 2px;
+              font-size: 0.73rem;
+              font-weight: 600;
+              // width: 30%;
+            }
+
+            .filter-select {
+              font-size: 0.833rem;
+              // width: 70%;
+            }
+          }
+        }
+      }
+    }
+
+    .table-section {
+      min-width: calc(100% - 336px);
+      border-radius: 4px !important;
+      background-color: #f0efeb;
+      display: flex;
+
+      .table-container {
+        width: 100%;
+        border-radius: 4px !important;
+        height: calc(100vh - 82.5px);
+        border-top: 1px solid #e2e2e2;
+
+        .table-col-br {
+          border-right: 1px solid #e6e6e6 !important;
+        }
+
+        .table-cell-text-center {
+          text-align: center !important;
+          justify-content: center !important;
+        }
+
+        .table-cell-text-start {
+          text-align: start !important;
+          justify-content: start !important;
+        }
+
+        .table-header-text-start {
+          .ag-header-cell-label {
+            justify-content: start !important;
+          }
+        }
+      }
+    }
+  }
+}
+
+.menu-popped-navbar {
+  .MuiMenu-paper {
+    background-color: #f0efeb !important;
+  }
+}
+
+.custom-menulist-comp {
+  .custom-menulist-header {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    padding: 6px;
+    justify-content: space-between;
+  }
+
+  .custom-menulist-footer {
+    display: flex;
+    flex-direction: row;
+    column-gap: 8px;
+    align-items: center;
+    border-radius: 0 0 4px 4px;
+    box-shadow: 0 2px 0 0 #e6e6e6 inset;
+    justify-content: flex-end;
+    padding: 6px;
+
+    .MuiButton-text {
+      color: #219ebc;
+    }
+
+    .MuiButton-contained {
+      background-color: #219ebc;
+    }
+  }
+}

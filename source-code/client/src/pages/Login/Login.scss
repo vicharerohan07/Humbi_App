@@ -1,0 +1,72 @@
+.container {
+  background-color: #f1f1f1;
+  display: flex !important;
+  justify-content: center;
+  align-items: center;
+  max-width: 100% !important;
+  height: 100vh;
+
+  .card {
+    min-width: 350px;
+    background-color: #ffffff;
+    border: 3px solid #e6e6e6;
+    border-radius: 4px !important;
+
+    .header {
+      .MuiCardHeader-content {
+        display: flex !important;
+        flex-direction: column;
+        row-gap: 4px;
+      }
+
+      .MuiCardHeader-title {
+        font-size: 16px !important;
+        color: #555;
+      }
+
+      .MuiCardHeader-subheader {
+        font-size: 14px !important;
+        color: #555;
+      }
+    }
+
+    .content {
+      display: flex !important;
+      padding: 8px 16px;
+      flex-direction: column;
+      row-gap: 12px;
+
+      .MuiFormLabel-root {
+        font-size: 14px !important;
+        color: #555;
+      }
+
+      .MuiInputBase-input {
+        font-size: 14px !important;
+        color: #555;
+      }
+
+      .password {
+        display: flex;
+        flex-direction: column;
+        row-gap: 4px;
+
+        .forgot-pass {
+          cursor: pointer;
+          align-self: flex-end;
+          font-size: 12px;
+          color: #0000ff;
+        }
+      }
+    }
+
+    .footer {
+      display: flex;
+      flex-direction: column;
+      row-gap: 4px;
+      justify-content: center !important;
+      align-items: center;
+      padding: 16px;
+    }
+  }
+}

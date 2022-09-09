@@ -1,8 +1,9 @@
+@import './_common.scss';
+
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
+  font-family: 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans',
+    'Droid Sans', 'Helvetica Neue', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -10,4 +11,65 @@ body {
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
+}
+
+.ag-root-wrapper {
+  border-radius: 4px !important;
+}
+
+.ag-header-cell {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.ag-cell {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.ag-cell-wrap-text {
+  white-space: normal;
+  word-break: break-word;
+  font-size: 0.77rem;
+  text-transform: uppercase !important;
+}
+
+.ag-header-group-cell-label {
+  justify-content: center;
+  font-weight: 700;
+  font-size: 13px;
+  color: #555;
+  text-transform: uppercase !important;
+}
+
+.ag-header-cell {
+  padding-inline: 8px;
+
+  .ag-header-cell-label {
+    justify-content: center;
+    font-weight: 700;
+    font-size: 12px;
+    color: #555;
+    text-transform: uppercase !important;
+  }
+}
+
+.ag-theme-material {
+  --ag-grid-size: 4px;
+  --ag-list-item-height: 20px;
+  --ag-header-height: 50px;
+  --ag-header-background-color: #fafafa;
+  --ag-row-hover-color: #b6d8e3;
+  --ag-odd-row-background-color: #fafafa;
+}
+
+.ag-theme-alpine {
+  --ag-grid-size: 4px;
+  --ag-list-item-height: 20px;
+  --ag-header-height: 50px;
+  --ag-header-background-color: #fafafa;
+  --ag-row-hover-color: #ffedd6;
+  --ag-odd-row-background-color: #fafafa;
 }

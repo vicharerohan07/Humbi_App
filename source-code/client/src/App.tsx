@@ -1,25 +1,24 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import React from 'react';
 
-import logo from './logo.svg';
+import { SWRConfig } from 'swr';
+
+import Dashboard from './pages/Dashboard/Dashboard';
 import './App.scss';
+import Login from './pages/Login/Login';
 
 const App = () => (
-  <div className="App">
-    <header className="App-header">
-      <img src={logo} className="App-logo" alt="logo" />
-      <p>
-        Edit <code>src/App.tsx</code> and save to reload.
-      </p>
-      <a
-        className="App-link"
-        href="https://reactjs.org"
-        target="_blank"
-        rel="noopener noreferrer"
-      >
-        Learn React
-      </a>
-    </header>
-  </div>
+  <SWRConfig
+    value={{
+      dedupingInterval: 60000,
+      shouldRetryOnError: false,
+      revalidateOnFocus: false,
+    }}
+  >
+    <div style={{ minWidth: 680 }}>
+      <Dashboard />
+    </div>
+  </SWRConfig>
 );
 
 export default App;
