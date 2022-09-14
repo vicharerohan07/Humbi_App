@@ -16,10 +16,15 @@ const selectStyleForFilterT1 = {
     ...base,
     maxWidth: '90% !important',
     width: 'fit-content !important',
+    paddingRight: 2,
     whiteSpace: 'nowrap',
     textOverflow: 'ellipsis',
     backgroundColor: '#e6e6e6 !important',
     borderRadius: 4,
+  }),
+  multiValueRemove: (base: any) => ({
+    ...base,
+    display: 'none',
   }),
   valueContainer: (base: any) => ({
     ...base,

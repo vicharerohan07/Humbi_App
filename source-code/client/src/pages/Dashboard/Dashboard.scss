@@ -107,11 +107,20 @@
       border-radius: 4px !important;
       background-color: #f0efeb;
       display: flex;
+      flex-direction: column;
+
+      .table-toolbar {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 56px !important;
+      }
+
 
       .table-container {
         width: 100%;
         border-radius: 4px !important;
-        height: calc(100vh - 82.5px);
+        height: calc(100vh - 82.5px - 56px);
         border-top: 1px solid #e2e2e2;
 
         .table-col-br {

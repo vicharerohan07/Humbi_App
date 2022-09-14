@@ -56,6 +56,10 @@ code {
   }
 }
 
+.ag-center-cols-viewport {
+  overflow-x: hidden !important;
+}
+
 .ag-theme-material {
   --ag-grid-size: 4px;
   --ag-list-item-height: 20px;

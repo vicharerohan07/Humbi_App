@@ -10,7 +10,6 @@ import {
   Accordion,
   AccordionDetails,
   AccordionSummary,
-  alpha,
   AppBar,
   Avatar,
   Badge,
@@ -18,10 +17,8 @@ import {
   Button,
   Container,
   IconButton,
-  InputBase,
   Menu,
   MenuItem,
-  styled,
   Toolbar,
   Tooltip,
   Typography,
@@ -30,6 +27,7 @@ import { ColDef, ColGroupDef } from 'ag-grid-community';
 import { AgGridColumnProps, AgGridReact } from 'ag-grid-react';
 import axios from 'axios';
 import Select, {
+  Props,
   createFilter,
   components,
   DropdownIndicatorProps,
@@ -45,12 +43,19 @@ import {
 } from '../../utils/styles/selectStyles';
 
 // For Navbar Tabs and Settings Menu
-const pages = ['Hcpcs Analysis', 'Physician Analysis'];
+const pages = ['Hcpcs Analysis'];
 const settings = ['Profile', 'Account', 'Logout'];
 
 // TEMP For Options react-select
 const globalFilterVals = {
-  hcpcs_class: [{ label: 'Cardiology', value: 'Cardiology' }],
+  hcpcs_class: [
+    { label: 'Cardiology', value: 'Cardiology' },
+    { label: 'Cardiologys', value: 'Cardiologys' },
+    { label: 'Cardiologyss', value: 'Cardiologyss' },
+    { label: 'aCardiologys', value: 'aCardiologys' },
+    { label: 'vCardiologys', value: 'vCardiologys' },
+    { label: 'eeCardiologys', value: 'eeCardiologys' },
+  ],
   hcpcs_category: [
     { label: 'Clinical Cardiology', value: 'Clinical Cardiology' },
   ],
@@ -58,81 +63,22 @@ const globalFilterVals = {
   hcpcs_code: [
     {
       label: '93010-Electrocardiogram (Ecg/Ekg) Hospital Reading',
-      value: '93010',
+      value: '93010-Electrocardiogram (Ecg/Ekg) Hospital Reading',
+    },
+    {
+      label: '93110-Electrocardiogram (Ecg/Ekg) Hospital Reading',
+      value: '93110-Electrocardiogram (Ecg/Ekg) Hospital Reading',
     },
   ],
-  loc_state: [
-    { label: 'dummy_1', value: '1' },
-    { label: 'dummy_2', value: '2' },
-    { label: 'dummy_3', value: '3' },
-    { label: 'dummy_4', value: '4' },
-    { label: 'dummy_5', value: '5' },
-    { label: 'dummy_6', value: '6' },
-  ],
-  loc_county: [
-    { label: 'dummy_1', value: '1' },
-    { label: 'dummy_2', value: '2' },
-    { label: 'dummy_3', value: '3' },
-    { label: 'dummy_4', value: '4' },
-    { label: 'dummy_5', value: '5' },
-    { label: 'dummy_6', value: '6' },
-  ],
-  loc_city: [
-    { label: 'dummy_1', value: '1' },
-    { label: 'dummy_2', value: '2' },
-    { label: 'dummy_3', value: '3' },
-    { label: 'dummy_4', value: '4' },
-    { label: 'dummy_5', value: '5' },
-    { label: 'dummy_6', value: '6' },
-  ],
-  loc_zipcode: [
-    { label: 'dummy_1', value: '1' },
-    { label: 'dummy_2', value: '2' },
-    { label: 'dummy_3', value: '3' },
-    { label: 'dummy_4', value: '4' },
-    { label: 'dummy_5', value: '5' },
-    { label: 'dummy_6', value: '6' },
-  ],
-  org_npi: [
-    { label: 'dummy_1', value: '1' },
-    { label: 'dummy_2', value: '2' },
-    { label: 'dummy_3', value: '3' },
-    { label: 'dummy_4', value: '4' },
-    { label: 'dummy_5', value: '5' },
-    { label: 'dummy_6', value: '6' },
-  ],
-  org_name: [
-    { label: 'dummy_1', value: '1' },
-    { label: 'dummy_2', value: '2' },
-    { label: 'dummy_3', value: '3' },
-    { label: 'dummy_4', value: '4' },
-    { label: 'dummy_5', value: '5' },
-    { label: 'dummy_6', value: '6' },
-  ],
-  physician_npi: [
-    { label: 'dummy_1', value: '1' },
-    { label: 'dummy_2', value: '2' },
-    { label: 'dummy_3', value: '3' },
-    { label: 'dummy_4', value: '4' },
-    { label: 'dummy_5', value: '5' },
-    { label: 'dummy_6', value: '6' },
-  ],
-  physician_name: [
-    { label: 'dummy_1', value: '1' },
-    { label: 'dummy_2', value: '2' },
-    { label: 'dummy_3', value: '3' },
-    { label: 'dummy_4', value: '4' },
-    { label: 'dummy_5', value: '5' },
-    { label: 'dummy_6', value: '6' },
-  ],
-  physician_speciality: [
-    { label: 'dummy_1', value: '1' },
-    { label: 'dummy_2', value: '2' },
-    { label: 'dummy_3', value: '3' },
-    { label: 'dummy_4', value: '4' },
-    { label: 'dummy_5', value: '5' },
-    { label: 'dummy_6', value: '6' },
-  ],
+  loc_state: [{ label: 'dummy_1', value: 'dummy_1' }],
+  loc_county: [{ label: 'dummy_1', value: 'dummy_1' }],
+  loc_city: [{ label: 'dummy_1', value: 'dummy_1' }],
+  loc_zipcode: [{ label: 'dummy_1', value: 'dummy_1' }],
+  org_npi: [{ label: 'dummy_1', value: 'dummy_1' }],
+  org_name: [{ label: 'dummy_1', value: 'dummy_1' }],
+  physician_npi: [{ label: 'dummy_1', value: 'dummy_1' }],
+  physician_name: [{ label: 'dummy_1', value: 'dummy_1' }],
+  physician_speciality: [{ label: 'dummy_1', value: 'dummy_1' }],
 };
 
 // Custom Navbar Dropdown Indicator
@@ -149,45 +95,91 @@ const DropdownIndicator = (props: DropdownIndicatorProps) => (
 );
 
 // Custom MenuList Component;
-const MenuList = (props: any) => (
-  <div className="custom-menulist-comp">
-    <div className="custom-menulist-header">
-      <Typography
-        sx={{
-          marginRight: 0,
-          display: 'flex',
-          color: '#219EBC',
-          fontWeight: 700,
-          fontSize: 10,
-          cursor: 'pointer',
-        }}
-      >
-        SELECT ALL
-      </Typography>
-      <Typography
-        sx={{
-          marginRight: 0,
-          display: 'flex',
-          color: '#219EBC',
-          fontWeight: 700,
-          fontSize: 10,
-          cursor: 'pointer',
-        }}
-      >
-        CLEAR
-      </Typography>
+const MenuList = (props: any) => {
+  const {
+    setMenuOpen,
+    setReqFilter,
+    setSelectFilter,
+    checkedFilters,
+    requestedFilter,
+  } = props.selectProps;
+
+  const selectAll = () => setSelectFilter({
+    ...checkedFilters,
+    [props.selectProps.name]: props.options.map((x: any) => x.value.toLowerCase()),
+  });
+
+  const clearAll = () => setSelectFilter({
+    ...checkedFilters,
+    [props.selectProps.name]: [],
+  });
+
+  return (
+    <div className="custom-menulist-comp">
+      <div className="custom-menulist-header">
+        <Typography
+          onMouseDown={(e) => {
+            e.stopPropagation();
+            selectAll();
+          }}
+          sx={{
+            marginRight: 0,
+            display: 'flex',
+            color: '#219EBC',
+            fontWeight: 700,
+            fontSize: 10,
+            cursor: 'pointer',
+          }}
+        >
+          SELECT ALL
+        </Typography>
+        <Typography
+          onMouseDown={(e) => {
+            e.stopPropagation();
+            clearAll();
+          }}
+          sx={{
+            marginRight: 0,
+            display: 'flex',
+            color: '#219EBC',
+            fontWeight: 700,
+            fontSize: 10,
+            cursor: 'pointer',
+          }}
+        >
+          CLEAR
+        </Typography>
+      </div>
+      <components.MenuList {...props}>{props.children}</components.MenuList>
+      <div className="custom-menulist-footer">
+        <Button
+          size="small"
+          variant="text"
+          key={`${props.selectProps.name}-cancel`}
+          onMouseDown={(e) => {
+            e.stopPropagation();
+            setSelectFilter(requestedFilter);
+            setMenuOpen('');
+          }}
+        >
+          Cancel
+        </Button>
+        <Button
+          size="small"
+          key={`${props.selectProps.name}-done`}
+          variant="contained"
+          onMouseDown={(e) => {
+            e.stopPropagation();
+            setReqFilter(checkedFilters);
+            setMenuOpen('');
+          }}
+        >
+          Done
+        </Button>
+      </div>
     </div>
-    <components.MenuList {...props}>{props.children}</components.MenuList>
-    <div className="custom-menulist-footer">
-      <Button size="small" variant="text">
-        Cancel
-      </Button>
-      <Button size="small" variant="contained">
-        Done
-      </Button>
-    </div>
-  </div>
-);
+  );
+};
 
 // Custom Option Component;
 const Option = (props: any) => (
@@ -199,14 +191,63 @@ const Option = (props: any) => (
   </div>
 );
 
+// Custom Value Container
+const ValueContainer = ({ children, ...props }: any) => {
+  const selected: any[] = props.getValue();
+  const selectedNode: any[] = [];
+  const allSelected: any[] = [];
+  let total = 0;
+
+  if (selected.length > 0) {
+    children[0].forEach((x: any, i: number) => {
+      if (i < 4) selectedNode.push(x);
+      else total += 1;
+    });
+  }
+
+  if (selected.length > 0 && selected.length === props.options.length) {
+    allSelected.push(children[0][selected.length - 1]);
+  }
+
+  return (
+    <components.ValueContainer {...props}>
+      {allSelected.length > 0 ? (
+        allSelected
+      ) : (
+        <>
+          {selectedNode.length > 0 ? selectedNode : children[0]}
+          {total > 0 && <span>{`+${total}`}</span>}
+          {children[1]}
+        </>
+      )}
+    </components.ValueContainer>
+  );
+};
+
+// Custom Multi Value
+const MultiValue = (props: any) => {
+  let labelToPrint = props.data.label;
+  const selected: any[] = props.getValue();
+  if (selected.length > 1 && selected.length === props.options.length) {
+    labelToPrint = 'All selected';
+  }
+
+  return (
+    <components.MultiValue {...props}>{labelToPrint}</components.MultiValue>
+  );
+};
+
 // Axios Interceptor Function
 const axiosFetcher = (url: string, params: any) => axios
-  .post(`${process.env.REACT_APP_API_URL}${url}`, { params: { ...params } })
+  .post(`${process.env.REACT_APP_API_URL}${url}`, params)
   .then((res) => res.data);
 
 const Dashboard = () => {
   // Menu open state
   const [anchorElUser, setAnchorElUser] = useState<null | HTMLElement>(null);
+
+  // Select Menu state
+  const [menuState, setMenuState] = useState<string>('');
 
   // Ag grid column definitions
   const [columnDefs, setColumnDefs] = useState<AgGridColumnProps[]>([]);
@@ -214,20 +255,45 @@ const Dashboard = () => {
   // All filters for table data
   const [filters, setFilters] = useState(globalFilterVals);
 
-  // Selected filters for table data
+  // Selected filters for API calling and table data
+  const [requestKey, setRequestKey] = useState<IFilters>({
+    hcpcs_class: [],
+    hcpcs_category: [],
+    hcpcs_sub_category: [],
+    hcpcs_code: [],
+    loc_state: [],
+    loc_county: [],
+    loc_city: [],
+    loc_zipcode: [],
+    org_npi: [],
+    org_name: [],
+    physician_npi: [],
+    physician_name: [],
+    physician_speciality: [],
+  });
+
+  // Selected filters for select elements
   const [selectedFilters, setSelectedFilters] = useState<IFilters>({
     hcpcs_class: [],
     hcpcs_category: [],
     hcpcs_sub_category: [],
     hcpcs_code: [],
+    loc_state: [],
+    loc_county: [],
+    loc_city: [],
+    loc_zipcode: [],
+    org_npi: [],
+    org_name: [],
+    physician_npi: [],
+    physician_name: [],
+    physician_speciality: [],
   });
 
   // SWR fetch call for table data
-  const {
-    data: hcpcsData,
-    mutate: fetchHcpcsData,
-    isValidating,
-  } = useSWR(() => [HcpcsAPI.listByFilter, selectedFilters], axiosFetcher);
+  const { data: hcpcsData, isValidating } = useSWR(
+    () => [HcpcsAPI.listByFilter, requestKey],
+    axiosFetcher,
+  );
 
   // Ag-grid coloumn props;
   useEffect(() => {
@@ -350,7 +416,62 @@ const Dashboard = () => {
     setAnchorElUser(null);
   };
 
+  // Handle selecting only single option react-select
+  useEffect(() => {
+    if (filters) {
+      Object.keys(filters).forEach((key) => {
+        if (filters[key as keyof typeof filters]?.length === 1) {
+          setSelectedFilters((s) => ({
+            ...s,
+            [key as keyof IFilters]: [
+              filters[key as keyof typeof filters][0].value.toLowerCase(),
+            ],
+          }));
+          setRequestKey((k) => ({
+            ...k,
+            [key as keyof IFilters]: [
+              filters[key as keyof typeof filters][0].value.toLowerCase(),
+            ],
+          }));
+        }
+      });
+    }
+  }, [filters]);
+
+  // Handle selecting all options where no selected filter react-select
+  // useEffect(() => {
+  //   if (filters) {
+  //     setSelectedFilters((s) => {
+  //       let temp = s;
+  //       Object.keys(s).forEach((key) => {
+  //         if (s[key as keyof IFilters]?.length === 0) {
+  //           temp = {
+  //             ...temp,
+  //             [key as keyof IFilters]: filters[key as keyof typeof filters].map(
+  //               (option) => option.value.toLowerCase(),
+  //             ),
+  //           };
+  //         }
+  //       });
+  //       return temp;
+  //     });
+  //   }
+  // }, [filters]);
+
   // Change Handlers for react-select
+  const filterChangeHandler = (newValue: any, actionMeta: any) => {
+    if (actionMeta.action === 'select-option') {
+      setSelectedFilters({
+        ...selectedFilters,
+        [actionMeta.name]: newValue.map((x: any) => x.value.toLowerCase()),
+      });
+    } else if (actionMeta.action === 'deselect-option') {
+      setSelectedFilters({
+        ...selectedFilters,
+        [actionMeta.name]: newValue.map((x: any) => x.value.toLowerCase()),
+      });
+    }
+  };
 
   // Filter configs for react-select filters
   const filterConfigForSelect = {
@@ -522,23 +643,45 @@ const Dashboard = () => {
                   Hcpcs Class
                 </label>
                 <Select
-                  components={{ Option, MenuList }}
+                  components={{
+                    Option,
+                    MenuList,
+                    ValueContainer,
+                    MultiValue,
+                  }}
                   name="hcpcs_class"
                   value={
-                    filters.hcpcs_class.length > 0
-                      ? filters.hcpcs_class[0]
+                    filters?.hcpcs_class?.length > 0
+                      ? filters?.hcpcs_class?.filter((x: any) => selectedFilters.hcpcs_class?.includes(
+                        x.value.toLowerCase(),
+                      ))
                       : null
                   }
                   styles={selectStyleForFilterT1}
-                  // onChange={handleSelectTemplateChange}
+                  // @ts-ignore
+                  setMenuOpen={setMenuState}
+                  checkedFilters={selectedFilters}
+                  requestedFilter={requestKey}
+                  setSelectFilter={setSelectedFilters}
+                  setReqFilter={setRequestKey}
+                  onChange={filterChangeHandler}
+                  onMenuClose={() => {
+                    setMenuState('');
+                    setSelectedFilters(requestKey);
+                  }}
+                  onMenuOpen={() => setMenuState('hcpcs_class')}
+                  menuIsOpen={menuState === 'hcpcs_class'}
+                  openMenuOnFocus
+                  captureMenuScroll
+                  openMenuOnClick
+                  closeMenuOnSelect={false}
                   menuPlacement="auto"
                   className="filter-select"
                   placeholder="No Selection"
-                  options={filters.hcpcs_class}
+                  options={filters?.hcpcs_class}
                   isMulti
                   hideSelectedOptions={false}
                   filterOption={createFilter(filterConfigForSelect)}
-                  closeMenuOnSelect={false}
                 />
               </div>
               <div className="filter-container">
@@ -546,23 +689,45 @@ const Dashboard = () => {
                   Category
                 </label>
                 <Select
-                  components={{ Option, MenuList }}
+                  components={{
+                    Option,
+                    MenuList,
+                    ValueContainer,
+                    MultiValue,
+                  }}
                   name="hcpcs_category"
                   value={
-                    filters.hcpcs_category.length > 0
-                      ? filters.hcpcs_category[0]
+                    filters?.hcpcs_category?.length > 0
+                      ? filters?.hcpcs_category?.filter((x: any) => selectedFilters.hcpcs_category?.includes(
+                        x.value.toLowerCase(),
+                      ))
                       : null
                   }
                   styles={selectStyleForFilterT1}
-                  // onChange={handleSelectTemplateChange}
+                  // @ts-ignore
+                  setMenuOpen={setMenuState}
+                  checkedFilters={selectedFilters}
+                  requestedFilter={requestKey}
+                  setSelectFilter={setSelectedFilters}
+                  setReqFilter={setRequestKey}
+                  onChange={filterChangeHandler}
+                  onMenuClose={() => {
+                    setMenuState('');
+                    setSelectedFilters(requestKey);
+                  }}
+                  onMenuOpen={() => setMenuState('hcpcs_category')}
+                  menuIsOpen={menuState === 'hcpcs_category'}
+                  openMenuOnFocus
+                  captureMenuScroll
+                  openMenuOnClick
+                  closeMenuOnSelect={false}
                   menuPlacement="auto"
                   className="filter-select"
                   placeholder="No Selection"
-                  options={filters.hcpcs_category}
+                  options={filters?.hcpcs_category}
                   isMulti
                   hideSelectedOptions={false}
                   filterOption={createFilter(filterConfigForSelect)}
-                  closeMenuOnSelect={false}
                 />
               </div>
               <div className="filter-container">
@@ -570,22 +735,44 @@ const Dashboard = () => {
                   Sub Category
                 </label>
                 <Select
-                  components={{ Option, MenuList }}
+                  components={{
+                    Option,
+                    MenuList,
+                    ValueContainer,
+                    MultiValue,
+                  }}
                   name="hcpcs_sub_category"
                   value={
-                    filters.hcpcs_sub_category.length > 0
-                      ? filters.hcpcs_sub_category[0]
+                    filters?.hcpcs_sub_category?.length > 0
+                      ? filters?.hcpcs_sub_category?.filter((x: any) => selectedFilters.hcpcs_sub_category?.includes(
+                        x.value.toLowerCase(),
+                      ))
                       : null
                   }
                   styles={selectStyleForFilterT1}
-                  // onChange={handleSelectTemplateChange}
+                  // @ts-ignore
+                  setMenuOpen={setMenuState}
+                  checkedFilters={selectedFilters}
+                  requestedFilter={requestKey}
+                  setSelectFilter={setSelectedFilters}
+                  setReqFilter={setRequestKey}
+                  onChange={filterChangeHandler}
+                  onMenuClose={() => {
+                    setMenuState('');
+                    setSelectedFilters(requestKey);
+                  }}
+                  onMenuOpen={() => setMenuState('hcpcs_sub_category')}
+                  menuIsOpen={menuState === 'hcpcs_sub_category'}
                   menuPlacement="auto"
                   className="filter-select"
                   placeholder="No Selection"
-                  options={filters.hcpcs_sub_category}
+                  options={filters?.hcpcs_sub_category}
                   isMulti
                   hideSelectedOptions={false}
                   filterOption={createFilter(filterConfigForSelect)}
+                  openMenuOnFocus
+                  captureMenuScroll
+                  openMenuOnClick
                   closeMenuOnSelect={false}
                 />
               </div>
@@ -594,20 +781,45 @@ const Dashboard = () => {
                   Hcpcs Code
                 </label>
                 <Select
-                  components={{ MenuList }}
+                  components={{
+                    Option,
+                    MenuList,
+                    ValueContainer,
+                    MultiValue,
+                  }}
                   name="hcpcs_code"
                   value={
-                    filters.hcpcs_code.length > 0 ? filters.hcpcs_code[0] : null
+                    filters?.hcpcs_code?.length > 0
+                      ? filters?.hcpcs_code?.filter((x: any) => selectedFilters.hcpcs_code?.includes(
+                        x.value.toLowerCase(),
+                      ))
+                      : null
                   }
                   styles={selectStyleForFilterT1}
-                  // onChange={handleSelectTemplateChange}
+                  // @ts-ignore
+                  setMenuOpen={setMenuState}
+                  checkedFilters={selectedFilters}
+                  requestedFilter={requestKey}
+                  setSelectFilter={setSelectedFilters}
+                  setReqFilter={setRequestKey}
+                  onChange={filterChangeHandler}
+                  onMenuClose={() => {
+                    setMenuState('');
+                    setSelectedFilters(requestKey);
+                  }}
+                  onMenuOpen={() => setMenuState('hcpcs_code')}
+                  menuIsOpen={menuState === 'hcpcs_code'}
+                  openMenuOnFocus
+                  captureMenuScroll
+                  openMenuOnClick
+                  closeMenuOnSelect={false}
                   menuPlacement="auto"
                   className="filter-select"
                   placeholder="No Selection"
-                  options={filters.hcpcs_code}
+                  options={filters?.hcpcs_code}
+                  isMulti
                   hideSelectedOptions={false}
                   filterOption={createFilter(filterConfigForSelect)}
-                  closeMenuOnSelect={false}
                 />
               </div>
             </AccordionDetails>
@@ -626,82 +838,186 @@ const Dashboard = () => {
             </AccordionSummary>
             <AccordionDetails className="detail">
               <div className="filter-container">
-                <label className="filter-label" htmlFor="state">
+                <label className="filter-label" htmlFor="loc_state">
                   State
                 </label>
                 <Select
-                  components={{ Option, MenuList }}
-                  name="state"
-                  value={null}
+                  components={{
+                    Option,
+                    MenuList,
+                    ValueContainer,
+                    MultiValue,
+                  }}
+                  name="loc_state"
+                  value={
+                    filters?.loc_state?.length > 0
+                      ? filters?.loc_state?.filter((x: any) => selectedFilters.loc_state?.includes(
+                        x.value.toLowerCase(),
+                      ))
+                      : null
+                  }
                   styles={selectStyleForFilterT1}
-                  // onChange={handleSelectTemplateChange}
+                  // @ts-ignore
+                  setMenuOpen={setMenuState}
+                  checkedFilters={selectedFilters}
+                  requestedFilter={requestKey}
+                  setSelectFilter={setSelectedFilters}
+                  setReqFilter={setRequestKey}
+                  onChange={filterChangeHandler}
+                  onMenuClose={() => {
+                    setMenuState('');
+                    setSelectedFilters(requestKey);
+                  }}
+                  onMenuOpen={() => setMenuState('loc_state')}
+                  menuIsOpen={menuState === 'loc_state'}
                   menuPlacement="auto"
                   className="filter-select"
                   placeholder="No Selection"
-                  options={filters.loc_state}
+                  options={filters?.loc_state}
                   isMulti
                   hideSelectedOptions={false}
                   filterOption={createFilter(filterConfigForSelect)}
+                  openMenuOnFocus
+                  captureMenuScroll
+                  openMenuOnClick
                   closeMenuOnSelect={false}
                 />
               </div>
               <div className="filter-container">
-                <label className="filter-label" htmlFor="county">
+                <label className="filter-label" htmlFor="loc_county">
                   County
                 </label>
                 <Select
-                  components={{ Option, MenuList }}
-                  name="county"
-                  value={null}
+                  components={{
+                    Option,
+                    MenuList,
+                    ValueContainer,
+                    MultiValue,
+                  }}
+                  name="loc_county"
+                  value={
+                    filters?.loc_county?.length > 0
+                      ? filters?.loc_county?.filter((x: any) => selectedFilters.loc_county?.includes(
+                        x.value.toLowerCase(),
+                      ))
+                      : null
+                  }
                   styles={selectStyleForFilterT1}
-                  // onChange={handleSelectTemplateChange}
+                  // @ts-ignore
+                  setMenuOpen={setMenuState}
+                  checkedFilters={selectedFilters}
+                  requestedFilter={requestKey}
+                  setSelectFilter={setSelectedFilters}
+                  setReqFilter={setRequestKey}
+                  onChange={filterChangeHandler}
+                  onMenuClose={() => {
+                    setMenuState('');
+                    setSelectedFilters(requestKey);
+                  }}
+                  onMenuOpen={() => setMenuState('loc_county')}
+                  menuIsOpen={menuState === 'loc_county'}
                   menuPlacement="auto"
                   className="filter-select"
                   placeholder="No Selection"
-                  options={filters.loc_county}
+                  options={filters?.loc_county}
                   isMulti
                   hideSelectedOptions={false}
                   filterOption={createFilter(filterConfigForSelect)}
+                  openMenuOnFocus
+                  captureMenuScroll
+                  openMenuOnClick
                   closeMenuOnSelect={false}
                 />
               </div>
               <div className="filter-container">
-                <label className="filter-label" htmlFor="city">
+                <label className="filter-label" htmlFor="loc_city">
                   City
                 </label>
                 <Select
-                  components={{ Option, MenuList }}
-                  name="city"
-                  value={null}
+                  components={{
+                    Option,
+                    MenuList,
+                    ValueContainer,
+                    MultiValue,
+                  }}
+                  name="loc_city"
+                  value={
+                    filters?.loc_city?.length > 0
+                      ? filters?.loc_city?.filter((x: any) => selectedFilters.loc_city?.includes(
+                        x.value.toLowerCase(),
+                      ))
+                      : null
+                  }
                   styles={selectStyleForFilterT1}
-                  // onChange={handleSelectTemplateChange}
+                  // @ts-ignore
+                  setMenuOpen={setMenuState}
+                  checkedFilters={selectedFilters}
+                  requestedFilter={requestKey}
+                  setSelectFilter={setSelectedFilters}
+                  setReqFilter={setRequestKey}
+                  onChange={filterChangeHandler}
+                  onMenuClose={() => {
+                    setMenuState('');
+                    setSelectedFilters(requestKey);
+                  }}
+                  onMenuOpen={() => setMenuState('loc_city')}
+                  menuIsOpen={menuState === 'loc_city'}
                   menuPlacement="auto"
                   className="filter-select"
                   placeholder="No Selection"
-                  options={filters.loc_city}
+                  options={filters?.loc_city}
                   isMulti
                   hideSelectedOptions={false}
                   filterOption={createFilter(filterConfigForSelect)}
+                  openMenuOnFocus
+                  captureMenuScroll
+                  openMenuOnClick
                   closeMenuOnSelect={false}
                 />
               </div>
               <div className="filter-container">
-                <label className="filter-label" htmlFor="zip-code">
+                <label className="filter-label" htmlFor="loc_zipcode">
                   Zipcode
                 </label>
                 <Select
-                  components={{ Option, MenuList }}
-                  name="zip-code"
-                  value={null}
+                  components={{
+                    Option,
+                    MenuList,
+                    ValueContainer,
+                    MultiValue,
+                  }}
+                  name="loc_zipcode"
+                  value={
+                    filters?.loc_zipcode?.length > 0
+                      ? filters?.loc_zipcode?.filter((x: any) => selectedFilters.loc_zipcode?.includes(
+                        x.value.toLowerCase(),
+                      ))
+                      : null
+                  }
                   styles={selectStyleForFilterT1}
-                  // onChange={handleSelectTemplateChange}
+                  // @ts-ignore
+                  setMenuOpen={setMenuState}
+                  checkedFilters={selectedFilters}
+                  requestedFilter={requestKey}
+                  setSelectFilter={setSelectedFilters}
+                  setReqFilter={setRequestKey}
+                  onChange={filterChangeHandler}
+                  onMenuClose={() => {
+                    setMenuState('');
+                    setSelectedFilters(requestKey);
+                  }}
+                  onMenuOpen={() => setMenuState('loc_zipcode')}
+                  menuIsOpen={menuState === 'loc_zipcode'}
                   menuPlacement="auto"
                   className="filter-select"
                   placeholder="No Selection"
-                  options={filters.loc_zipcode}
+                  options={filters?.loc_zipcode}
                   isMulti
                   hideSelectedOptions={false}
                   filterOption={createFilter(filterConfigForSelect)}
+                  openMenuOnFocus
+                  captureMenuScroll
+                  openMenuOnClick
                   closeMenuOnSelect={false}
                 />
               </div>
@@ -721,122 +1037,249 @@ const Dashboard = () => {
             </AccordionSummary>
             <AccordionDetails className="detail">
               <div className="filter-container">
-                <label className="filter-label" htmlFor="npi-org">
+                <label className="filter-label" htmlFor="org_npi">
                   Npi Org
                 </label>
                 <Select
-                  components={{ Option, MenuList }}
-                  name="npi-org"
-                  value={null}
-                  styles={selectStyleForFilterT1}
-                  // onChange={handleSelectTemplateChange}
-                  menuPlacement="auto"
-                  className="filter-select"
-                  placeholder="No Selection"
-                  options={filters.org_npi}
-                  isMulti
-                  hideSelectedOptions={false}
-                  filterOption={createFilter(filterConfigForSelect)}
-                  closeMenuOnSelect={false}
-                />
-              </div>
-              <div className="filter-container">
-                <label className="filter-label" htmlFor="org-name">
-                  Org Name
-                </label>
-                <Select
-                  components={{ Option, MenuList }}
-                  name="org-name"
-                  value={null}
-                  styles={selectStyleForFilterT1}
-                  // onChange={handleSelectTemplateChange}
-                  menuPlacement="auto"
-                  className="filter-select"
-                  placeholder="No Selection"
-                  options={filters.org_name}
-                  isMulti
-                  hideSelectedOptions={false}
-                  filterOption={createFilter(filterConfigForSelect)}
-                  closeMenuOnSelect={false}
-                />
-              </div>
-              <div className="filter-container">
-                <label className="filter-label" htmlFor="npi-doc">
-                  Npi Doc
-                </label>
-                <Select
-                  components={{ Option, MenuList }}
-                  name="npi-doc"
+                  components={{
+                    Option,
+                    MenuList,
+                    ValueContainer,
+                    MultiValue,
+                  }}
+                  name="org_npi"
                   value={
-                    filters.physician_npi.length > 0
-                      ? [filters.physician_npi[0], filters.physician_npi[1], filters.physician_npi[2], filters.physician_npi[4]]
+                    filters?.org_npi?.length > 0
+                      ? filters?.org_npi?.filter((x: any) => selectedFilters.org_npi?.includes(
+                        x.value.toLowerCase(),
+                      ))
                       : null
                   }
                   styles={selectStyleForFilterT1}
-                  // onChange={handleSelectTemplateChange}
+                  // @ts-ignore
+                  setMenuOpen={setMenuState}
+                  checkedFilters={selectedFilters}
+                  requestedFilter={requestKey}
+                  setSelectFilter={setSelectedFilters}
+                  setReqFilter={setRequestKey}
+                  onChange={filterChangeHandler}
+                  onMenuClose={() => {
+                    setMenuState('');
+                    setSelectedFilters(requestKey);
+                  }}
+                  onMenuOpen={() => setMenuState('org_npi')}
+                  menuIsOpen={menuState === 'org_npi'}
                   menuPlacement="auto"
                   className="filter-select"
                   placeholder="No Selection"
-                  options={filters.physician_npi}
+                  options={filters?.org_npi}
                   isMulti
                   hideSelectedOptions={false}
                   filterOption={createFilter(filterConfigForSelect)}
+                  openMenuOnFocus
+                  captureMenuScroll
+                  openMenuOnClick
                   closeMenuOnSelect={false}
                 />
               </div>
               <div className="filter-container">
-                <label className="filter-label" htmlFor="physician">
+                <label className="filter-label" htmlFor="org_name">
+                  Org Name
+                </label>
+                <Select
+                  components={{
+                    Option,
+                    MenuList,
+                    ValueContainer,
+                    MultiValue,
+                  }}
+                  name="org_name"
+                  value={
+                    filters?.org_name?.length > 0
+                      ? filters?.org_name?.filter((x: any) => selectedFilters.org_name?.includes(
+                        x.value.toLowerCase(),
+                      ))
+                      : null
+                  }
+                  styles={selectStyleForFilterT1}
+                  // @ts-ignore
+                  setMenuOpen={setMenuState}
+                  checkedFilters={selectedFilters}
+                  requestedFilter={requestKey}
+                  setSelectFilter={setSelectedFilters}
+                  setReqFilter={setRequestKey}
+                  onChange={filterChangeHandler}
+                  onMenuClose={() => {
+                    setMenuState('');
+                    setSelectedFilters(requestKey);
+                  }}
+                  onMenuOpen={() => setMenuState('org_name')}
+                  menuIsOpen={menuState === 'org_name'}
+                  menuPlacement="auto"
+                  className="filter-select"
+                  placeholder="No Selection"
+                  options={filters?.org_name}
+                  isMulti
+                  hideSelectedOptions={false}
+                  filterOption={createFilter(filterConfigForSelect)}
+                  openMenuOnFocus
+                  captureMenuScroll
+                  openMenuOnClick
+                  closeMenuOnSelect={false}
+                />
+              </div>
+              <div className="filter-container">
+                <label className="filter-label" htmlFor="physician_npi">
+                  Npi Doc
+                </label>
+                <Select
+                  components={{
+                    Option,
+                    MenuList,
+                    ValueContainer,
+                    MultiValue,
+                  }}
+                  name="physician_npi"
+                  value={
+                    filters?.physician_npi?.length > 0
+                      ? filters?.physician_npi?.filter((x: any) => selectedFilters.physician_npi?.includes(
+                        x.value.toLowerCase(),
+                      ))
+                      : null
+                  }
+                  styles={selectStyleForFilterT1}
+                  // @ts-ignore
+                  setMenuOpen={setMenuState}
+                  checkedFilters={selectedFilters}
+                  requestedFilter={requestKey}
+                  setSelectFilter={setSelectedFilters}
+                  setReqFilter={setRequestKey}
+                  onChange={filterChangeHandler}
+                  onMenuClose={() => {
+                    setMenuState('');
+                    setSelectedFilters(requestKey);
+                  }}
+                  onMenuOpen={() => setMenuState('physician_npi')}
+                  menuIsOpen={menuState === 'physician_npi'}
+                  menuPlacement="auto"
+                  className="filter-select"
+                  placeholder="No Selection"
+                  options={filters?.physician_npi}
+                  isMulti
+                  hideSelectedOptions={false}
+                  filterOption={createFilter(filterConfigForSelect)}
+                  openMenuOnFocus
+                  captureMenuScroll
+                  openMenuOnClick
+                  closeMenuOnSelect={false}
+                />
+              </div>
+              <div className="filter-container">
+                <label className="filter-label" htmlFor="physician_name">
                   Physician
                 </label>
                 <Select
-                  components={{ Option, MenuList }}
-                  name="physician"
-                  value={filters.physician_name.length > 0 ? filters.physician_name[0] : null}
+                  components={{
+                    Option,
+                    MenuList,
+                    ValueContainer,
+                    MultiValue,
+                  }}
+                  name="physician_name"
+                  value={
+                    filters?.physician_name?.length > 0
+                      ? filters?.physician_name?.filter((x: any) => selectedFilters.physician_name?.includes(
+                        x.value.toLowerCase(),
+                      ))
+                      : null
+                  }
                   styles={selectStyleForFilterT1}
-                  // onChange={handleSelectTemplateChange}
+                  // @ts-ignore
+                  setMenuOpen={setMenuState}
+                  checkedFilters={selectedFilters}
+                  requestedFilter={requestKey}
+                  setSelectFilter={setSelectedFilters}
+                  setReqFilter={setRequestKey}
+                  onChange={filterChangeHandler}
+                  onMenuClose={() => {
+                    setMenuState('');
+                    setSelectedFilters(requestKey);
+                  }}
+                  onMenuOpen={() => setMenuState('physician_name')}
+                  menuIsOpen={menuState === 'physician_name'}
                   menuPlacement="auto"
                   className="filter-select"
                   placeholder="No Selection"
-                  options={filters.physician_name}
+                  options={filters?.physician_name}
                   isMulti
                   hideSelectedOptions={false}
                   filterOption={createFilter(filterConfigForSelect)}
+                  openMenuOnFocus
+                  captureMenuScroll
+                  openMenuOnClick
                   closeMenuOnSelect={false}
                 />
               </div>
               <div className="filter-container">
-                <label className="filter-label" htmlFor="speciality">
+                <label className="filter-label" htmlFor="physician_speciality">
                   Speciality
                 </label>
                 <Select
-                  components={{ Option, MenuList }}
-                  name="speciality"
-                  value={null}
+                  components={{
+                    Option,
+                    MenuList,
+                    ValueContainer,
+                    MultiValue,
+                  }}
+                  name="physician_speciality"
+                  value={
+                    filters?.physician_speciality?.length > 0
+                      ? filters?.physician_speciality?.filter((x: any) => selectedFilters.physician_speciality?.includes(
+                        x.value.toLowerCase(),
+                      ))
+                      : null
+                  }
                   styles={selectStyleForFilterT1}
-                  // onChange={handleSelectTemplateChange}
+                  // @ts-ignore
+                  setMenuOpen={setMenuState}
+                  checkedFilters={selectedFilters}
+                  requestedFilter={requestKey}
+                  setSelectFilter={setSelectedFilters}
+                  setReqFilter={setRequestKey}
+                  onChange={filterChangeHandler}
+                  onMenuClose={() => {
+                    setMenuState('');
+                    setSelectedFilters(requestKey);
+                  }}
+                  onMenuOpen={() => setMenuState('physician_speciality')}
+                  menuIsOpen={menuState === 'physician_speciality'}
                   menuPlacement="auto"
                   className="filter-select"
                   placeholder="No Selection"
-                  options={filters.physician_speciality}
+                  options={filters?.physician_speciality}
                   isMulti
                   hideSelectedOptions={false}
                   filterOption={createFilter(filterConfigForSelect)}
+                  openMenuOnFocus
+                  captureMenuScroll
+                  openMenuOnClick
                   closeMenuOnSelect={false}
                 />
               </div>
             </AccordionDetails>
           </Accordion>
         </div>
-
         {/* Table section starts from here */}
         <div className="table-section">
+          <div className="table-toolbar">TABLE TOOLBAR</div>
           <div className="ag-theme-material table-container">
             <AgGridReact
               // frameworkComponents={{
               //   statusCellRenderer: (cellProps: any) => <span className="rva-custom-cell" style={{ background: DashboardAssetStatusColor[cellProps.value]?.background, color: DashboardAssetStatusColor[cellProps.value]?.text }}>{cellProps.value}</span>,
               // }}
-              suppressCellSelection
+              suppressCellFocus
               suppressMovableColumns
+              suppressHorizontalScroll
               headerHeight={53}
               tooltipShowDelay={2000}
               pagination
