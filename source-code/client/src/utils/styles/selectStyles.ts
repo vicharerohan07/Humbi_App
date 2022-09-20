@@ -86,6 +86,80 @@ const selectStyleForFilterT1 = {
   }),
 };
 
+const selectStyleGeneralDropdown = {
+  clearIndicator: (base: any) => ({
+    ...base,
+    display: 'none',
+  }),
+  dropdownIndicator: (base: any) => ({
+    ...base,
+    padding: 4,
+  }),
+  indicatorSeparator: (base: any) => ({
+    ...base,
+    margin: 0,
+    width: 0.5,
+  }),
+  valueContainer: (base: any) => ({
+    ...base,
+    minHeight: 28,
+    position: 'unset !important',
+  }),
+  control: (base: any, state: any) => ({
+    ...base,
+    width: 225,
+    borderRadius: 4,
+    marginRight: 0,
+    fontSize: 12,
+    minHeight: 28,
+    paddingInline: 0,
+    boxShadow: state.menuIsOpen ? '0 0 0 1px #126782' : '',
+    border: state.isFocused ? '1px solid #126782 !important' : '',
+    '&:hover': {
+      borderColor: state.isFocused ? '#126782 !important' : '',
+    },
+  }),
+  menu: (base: any) => ({
+    ...base,
+    width: 225,
+    borderRadius: 4,
+    boxShadow: '0 0 0 1px #126782',
+    hyphens: 'auto',
+    marginTop: 4,
+    marginBottom: 4,
+    textAlign: 'left',
+    wordWrap: 'break-word',
+    fontSize: 12,
+    paddingInline: 0,
+  }),
+  menuList: (base: any) => ({
+    ...base,
+    width: 225,
+    borderRadius: 4,
+    fontSize: 12,
+    paddingInline: 2,
+    paddingTop: 2,
+    paddingBottom: 2,
+    maxHeight: 148,
+  }),
+  option: (base: any, state: any) => ({
+    ...base,
+    display: 'flex',
+    flexDirection: 'row',
+    columnGap: 8,
+    justifyContent: 'flex-start',
+    alignItems: 'center',
+    borderRadius: 4,
+    marginBottom: 2,
+    color: '#555',
+    backgroundColor:
+      state.isFocused || state.isSelected ? '#c9e5ee !important' : '',
+    '&:hover': {
+      backgroundColor: '#b6d8e3 !important',
+    },
+  }),
+};
+
 const selectStyleForSearch = {
   clearIndicator: (base: any) => ({
     ...base,
@@ -135,4 +209,4 @@ const selectStyleForSearch = {
   }),
 };
 
-export { selectStyleForFilterT1, selectStyleForSearch };
+export { selectStyleForFilterT1, selectStyleForSearch, selectStyleGeneralDropdown };

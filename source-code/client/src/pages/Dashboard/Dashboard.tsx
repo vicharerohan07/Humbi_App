@@ -1,6 +1,8 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { useEffect, useState } from 'react';
 
+import CancelOutlinedIcon from '@mui/icons-material/CancelOutlined';
+import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import DonutSmallTwoToneIcon from '@mui/icons-material/DonutSmallTwoTone';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import MailIcon from '@mui/icons-material/Mail';
@@ -19,11 +21,19 @@ import {
   IconButton,
   Menu,
   MenuItem,
+  TextField,
   Toolbar,
   Tooltip,
   Typography,
 } from '@mui/material';
-import { ColDef, ColGroupDef } from 'ag-grid-community';
+import CircularProgress from '@mui/material/CircularProgress';
+import {
+  ColDef,
+  ColGroupDef,
+  GridApi,
+  GridReadyEvent,
+  RowNode,
+} from 'ag-grid-community';
 import { AgGridColumnProps, AgGridReact } from 'ag-grid-react';
 import axios from 'axios';
 import Select, {
@@ -40,45 +50,40 @@ import { IFilters } from '../../utils/models/dashboard';
 import {
   selectStyleForFilterT1,
   selectStyleForSearch,
+  selectStyleGeneralDropdown,
 } from '../../utils/styles/selectStyles';
 
 // For Navbar Tabs and Settings Menu
 const pages = ['Hcpcs Analysis'];
 const settings = ['Profile', 'Account', 'Logout'];
+const typeOfStat = [
+  { label: 'Place of service (Professional)', value: 0 },
+  { label: 'Place of service (Facility)', value: 1 },
+];
 
-// TEMP For Options react-select
-const globalFilterVals = {
-  hcpcs_class: [
-    { label: 'Cardiology', value: 'Cardiology' },
-    { label: 'Cardiologys', value: 'Cardiologys' },
-    { label: 'Cardiologyss', value: 'Cardiologyss' },
-    { label: 'aCardiologys', value: 'aCardiologys' },
-    { label: 'vCardiologys', value: 'vCardiologys' },
-    { label: 'eeCardiologys', value: 'eeCardiologys' },
-  ],
-  hcpcs_category: [
-    { label: 'Clinical Cardiology', value: 'Clinical Cardiology' },
-  ],
-  hcpcs_sub_category: [{ label: 'Diagnostic', value: 'Diagnostic' }],
-  hcpcs_code: [
-    {
-      label: '93010-Electrocardiogram (Ecg/Ekg) Hospital Reading',
-      value: '93010-Electrocardiogram (Ecg/Ekg) Hospital Reading',
-    },
-    {
-      label: '93110-Electrocardiogram (Ecg/Ekg) Hospital Reading',
-      value: '93110-Electrocardiogram (Ecg/Ekg) Hospital Reading',
-    },
-  ],
-  loc_state: [{ label: 'dummy_1', value: 'dummy_1' }],
-  loc_county: [{ label: 'dummy_1', value: 'dummy_1' }],
-  loc_city: [{ label: 'dummy_1', value: 'dummy_1' }],
-  loc_zipcode: [{ label: 'dummy_1', value: 'dummy_1' }],
-  org_npi: [{ label: 'dummy_1', value: 'dummy_1' }],
-  org_name: [{ label: 'dummy_1', value: 'dummy_1' }],
-  physician_npi: [{ label: 'dummy_1', value: 'dummy_1' }],
-  physician_name: [{ label: 'dummy_1', value: 'dummy_1' }],
-  physician_speciality: [{ label: 'dummy_1', value: 'dummy_1' }],
+const sampleResObj: any = {
+  year: '',
+  npi_doc: '',
+  hcpcs_code_description: 'Total',
+  hcpcs_group: '',
+  doc_specialty: '',
+  loc_city: '',
+  loc_state: '',
+  loc_zip: '',
+  loc_county: '',
+  npi_org: '',
+  org_name: '',
+  phy_name: '',
+  op_fac_unit_cost: '',
+  asc_fac_unit_cost: '',
+  srvs_asc_phy: 0,
+  srvs_asc_fac: 0,
+  srvs_ip_phy: 0,
+  srvs_off: 0,
+  srvs_op_phy: 0,
+  srvs_op_fac: 1,
+  total_savings: 1935.27,
+  total: 1000,
 };
 
 // Custom Navbar Dropdown Indicator
@@ -102,6 +107,7 @@ const MenuList = (props: any) => {
     setSelectFilter,
     checkedFilters,
     requestedFilter,
+    setFilterHistory,
   } = props.selectProps;
 
   const selectAll = () => setSelectFilter({
@@ -119,6 +125,7 @@ const MenuList = (props: any) => {
       <div className="custom-menulist-header">
         <Typography
           onMouseDown={(e) => {
+            e.preventDefault();
             e.stopPropagation();
             selectAll();
           }}
@@ -135,6 +142,7 @@ const MenuList = (props: any) => {
         </Typography>
         <Typography
           onMouseDown={(e) => {
+            e.preventDefault();
             e.stopPropagation();
             clearAll();
           }}
@@ -170,6 +178,24 @@ const MenuList = (props: any) => {
           variant="contained"
           onMouseDown={(e) => {
             e.stopPropagation();
+            setFilterHistory((history: any[]) => {
+              if (
+                history.includes(props.selectProps.name)
+                && checkedFilters[props.selectProps.name].length === 0
+              ) {
+                return history.filter((x: any) => x !== props.selectProps.name);
+              }
+              if (
+                history.includes(props.selectProps.name)
+                && checkedFilters[props.selectProps.name].length > 0
+              ) {
+                const temp = history.filter(
+                  (x: any) => x !== props.selectProps.name,
+                );
+                return [...temp, props.selectProps.name];
+              }
+              return [...history, props.selectProps.name];
+            });
             setReqFilter(checkedFilters);
             setMenuOpen('');
           }}
@@ -242,6 +268,23 @@ const axiosFetcher = (url: string, params: any) => axios
   .post(`${process.env.REACT_APP_API_URL}${url}`, params)
   .then((res) => res.data);
 
+const formatter = new Intl.NumberFormat('en-US', {
+  style: 'currency',
+  currency: 'USD',
+  maximumFractionDigits: 0,
+});
+
+const calcTotalCols = [
+  'srvs_asc_fac',
+  'srvs_op_fac',
+  'total_savings',
+  'total',
+  'srvs_ip_phy',
+  'srvs_off',
+  'srvs_op_phy',
+  'srvs_asc_phy',
+];
+
 const Dashboard = () => {
   // Menu open state
   const [anchorElUser, setAnchorElUser] = useState<null | HTMLElement>(null);
@@ -249,11 +292,14 @@ const Dashboard = () => {
   // Select Menu state
   const [menuState, setMenuState] = useState<string>('');
 
+  // Threshold value setter
+  const [thresholdVal, setThresholdVal] = useState<number>(100);
+
+  // Selected measure to display
+  const [selectedMeasure, setSelectedMeasure] = useState<number>(0);
+
   // Ag grid column definitions
   const [columnDefs, setColumnDefs] = useState<AgGridColumnProps[]>([]);
-
-  // All filters for table data
-  const [filters, setFilters] = useState(globalFilterVals);
 
   // Selected filters for API calling and table data
   const [requestKey, setRequestKey] = useState<IFilters>({
@@ -261,6 +307,7 @@ const Dashboard = () => {
     hcpcs_category: [],
     hcpcs_sub_category: [],
     hcpcs_code: [],
+    hcpcs_code_description: [],
     loc_state: [],
     loc_county: [],
     loc_city: [],
@@ -270,6 +317,7 @@ const Dashboard = () => {
     physician_npi: [],
     physician_name: [],
     physician_speciality: [],
+    threshold: 1,
   });
 
   // Selected filters for select elements
@@ -278,6 +326,7 @@ const Dashboard = () => {
     hcpcs_category: [],
     hcpcs_sub_category: [],
     hcpcs_code: [],
+    hcpcs_code_description: [],
     loc_state: [],
     loc_county: [],
     loc_city: [],
@@ -287,13 +336,35 @@ const Dashboard = () => {
     physician_npi: [],
     physician_name: [],
     physician_speciality: [],
+    threshold: thresholdVal / 100,
   });
+
+  // To maintain filter history
+  const [filterHistory, setFilterHistory] = useState<string[]>([]);
 
   // SWR fetch call for table data
   const { data: hcpcsData, isValidating } = useSWR(
     () => [HcpcsAPI.listByFilter, requestKey],
     axiosFetcher,
   );
+
+  // All filters for table data
+  const [filters, setFilters] = useState<any>({});
+
+  // Set Filters on loading
+  useEffect(() => {
+    if (hcpcsData?.filters && !isValidating) {
+      const temp = Object.entries(hcpcsData.filters)
+        .filter((v: any) => !filterHistory.includes(v[0]))
+        .reduce((prev, curr) => ({ ...prev, [curr[0]]: curr[1] }), {});
+      setFilters((filter: any) => {
+        Object.keys(temp).forEach((key) => {
+          filter[key] = temp[key as keyof typeof temp];
+        });
+        return filter;
+      });
+    }
+  }, [filterHistory, hcpcsData, isValidating]);
 
   // Ag-grid coloumn props;
   useEffect(() => {
@@ -303,108 +374,203 @@ const Dashboard = () => {
         headerClass: 'table-col-br',
         children: [
           {
-            flex: 1.1,
-            colId: 'physician-npi',
-            field: 'Physician NPI',
+            flex: 1.5,
+            colId: 'hcpcs_code_description',
+            field: 'hcpcs_code_description',
+            headerName: 'Hcpcs',
+            cellClass: 'table-cell-text-start',
+            wrapText: true,
+            autoHeight: true,
+          },
+          {
+            flex: 0.9,
+            colId: 'npi_doc',
+            field: 'npi_doc',
             headerName: 'Physician NPI',
           },
           {
-            flex: 1.15,
-            colId: 'physician',
-            field: 'Physician',
+            flex: 1,
+            colId: 'phy_name',
+            field: 'phy_name',
             headerName: 'Physician',
             cellClass: 'table-cell-text-center',
             wrapText: true,
             autoHeight: true,
           },
           {
-            flex: 2,
-            colId: 'org-name',
-            field: 'Org Name',
+            flex: 1.5,
+            colId: 'org_name',
+            field: 'org_name',
             headerName: 'Organisation',
-            headerClass: 'table-header-text-start',
+            headerClass: 'table-header-text-center',
             cellClass: 'table-cell-text-start',
             wrapText: true,
             autoHeight: true,
           },
           {
-            flex: 2,
-            colId: 'speciality',
-            field: 'Speciality',
+            flex: 1.5,
+            colId: 'doc_specialty',
+            field: 'doc_specialty',
             headerName: 'Speciality',
-            headerClass: 'table-header-text-start',
+            headerClass: 'table-header-text-center',
             cellClass: 'table-cell-text-start',
             wrapText: true,
             autoHeight: true,
           },
           {
             flex: 1,
-            colId: 'city',
-            field: 'City',
-            headerName: 'City',
-            cellClass: 'table-cell-text-center',
+            colId: 'loc',
+            headerName: 'Location',
+            headerClass: 'table-header-text-center table-col-br',
+            cellClass: 'table-cell-text-start table-col-br',
+            valueGetter: (params: any) => `${params.data.loc_city}${
+              params.data.loc_city === '' ? '' : ','
+            } ${params.data.loc_county}${
+              params.data.loc_county === '' ? '' : ','
+            } ${params?.data.loc_state?.toUpperCase()} ${
+              params.data.loc_zip
+            }`,
             wrapText: true,
             autoHeight: true,
-          },
-          {
-            flex: 1,
-            colId: 'state',
-            field: 'State',
-            headerClass: 'table-col-br',
-            cellClass: 'table-col-br',
-            headerName: 'State',
           },
           // {
+          //   flex: 1,
+          //   colId: 'loc_city',
+          //   field: 'loc_city',
+          //   headerName: 'City',
+          //   cellClass: 'table-cell-text-center',
+          //   wrapText: true,
+          //   autoHeight: true,
+          // },
+          // {
+          //   flex: 1,
+          //   colId: 'loc_state',
+          //   field: 'loc_state',
+          //   headerName: 'State',
+          // },
+          // {
           //   flex: 0.75,
-          //   colId: 'zip',
-          //   field: 'zip',
-          //   cellClass: 'table-col-zipcode',
+          //   colId: 'loc_zip',
+          //   field: 'loc_zip',
+          //   headerClass: 'table-col-br',
+          //   cellClass: 'table-col-br',
           //   headerName: 'Zipcode',
           // },
         ],
       },
-      {
-        headerName: 'Place Of Service',
+      selectedMeasure === 0 ? {
+        headerName: 'Place Of Service (Professional )',
+        headerClass: 'table-col-br',
         children: [
           {
-            flex: 0.75,
-            colId: 'asc',
-            field: 'ASC',
+            flex: 0.7,
+            colId: 'srvs_asc_phy',
+            field: 'srvs_asc_phy',
             cellClass: 'table-col-br',
             headerName: 'ASC',
           },
           {
-            flex: 0.75,
-            colId: 'ip',
-            field: 'IP',
+            flex: 0.7,
+            colId: 'srvs_ip_phy',
+            field: 'srvs_ip_phy',
             cellClass: 'table-col-br',
             headerName: 'IP',
           },
           {
-            flex: 0.75,
-            colId: 'op',
-            field: 'OP',
+            flex: 0.7,
+            colId: 'srvs_op_phy',
+            field: 'srvs_op_phy',
+            cellClass: 'table-col-br',
+            headerName: 'OP',
+          },
+          {
+            flex: 0.7,
+            colId: 'srvs_off',
+            field: 'srvs_off',
+            cellClass: 'table-col-br',
+            headerName: 'OFF',
+          },
+          {
+            flex: 0.7,
+            colId: 'total',
+            field: 'total',
+            cellClass: 'table-col-br',
+            headerClass: 'table-col-br',
+            headerName: 'Total',
+            sort: 'desc',
+          },
+        ],
+      } : { hide: true },
+      selectedMeasure === 1 ? {
+        headerName: 'Place Of Service (Facility)',
+        children: [
+          {
+            flex: 0.5,
+            colId: 'srvs_op_fac',
+            field: 'srvs_op_fac',
             cellClass: 'table-col-br',
             headerName: 'OP',
           },
           {
             flex: 0.75,
-            colId: 'office',
-            field: 'OFFICE',
+            colId: 'op_fac_unit_cost',
+            valueGetter: (params: any) => (params?.data.op_fac_unit_cost === ''
+              ? ''
+              : formatter.format(params?.data.op_fac_unit_cost)),
+            comparator: (a: string, b: string) => {
+              const valA = parseInt(a.replace('$', '').replace(',', ''));
+              const valB = parseInt(b.replace('$', '').replace(',', ''));
+              if (valA === valB) return 0;
+              return valA > valB ? 1 : -1;
+            },
             cellClass: 'table-col-br',
-            headerName: 'OFFICE',
+            headerName: 'OP Rate',
+            headerTooltip: 'OP Rate',
+          },
+          {
+            flex: 0.5,
+            colId: 'srvs_asc_fac',
+            field: 'srvs_asc_fac',
+            cellClass: 'table-col-br',
+            headerName: 'ASC',
+          },
+          {
+            flex: 0.75,
+            colId: 'asc_fac_unit_cost',
+            valueGetter: (params: any) => (params?.data.asc_fac_unit_cost === ''
+              ? ''
+              : formatter.format(params?.data.asc_fac_unit_cost)),
+            comparator: (a: string, b: string) => {
+              const valA = parseInt(a.replace('$', '').replace(',', ''));
+              const valB = parseInt(b.replace('$', '').replace(',', ''));
+              if (valA === valB) return 0;
+              return valA > valB ? 1 : -1;
+            },
+            cellClass: 'table-col-br',
+            headerName: 'ASC Rate',
+            headerTooltip: 'ASC Rate',
           },
           {
             flex: 1,
-            colId: 'total',
-            field: 'Total',
-            headerName: 'Total',
+            colId: 'total_savings',
+            valueGetter: (params: any) => (params?.data.total_savings === ''
+              ? ''
+              : formatter.format(params?.data.total_savings)),
+            comparator: (a: string, b: string) => {
+              const valA = parseInt(a.replace('$', '').replace(',', ''));
+              const valB = parseInt(b.replace('$', '').replace(',', ''));
+              if (valA === valB) return 0;
+              return valA > valB ? 1 : -1;
+            },
+            headerName: 'Savings',
+            headerTooltip: 'Total Savings',
+            sort: 'desc',
           },
         ],
-      },
+      } : { hide: true },
     ];
     setColumnDefs(common);
-  }, [hcpcsData]);
+  }, [hcpcsData, selectedMeasure]);
 
   // Menu open event handle for Navbar
   const handleOpenUserMenu = (event: React.MouseEvent<HTMLElement>) => {
@@ -417,26 +583,26 @@ const Dashboard = () => {
   };
 
   // Handle selecting only single option react-select
-  useEffect(() => {
-    if (filters) {
-      Object.keys(filters).forEach((key) => {
-        if (filters[key as keyof typeof filters]?.length === 1) {
-          setSelectedFilters((s) => ({
-            ...s,
-            [key as keyof IFilters]: [
-              filters[key as keyof typeof filters][0].value.toLowerCase(),
-            ],
-          }));
-          setRequestKey((k) => ({
-            ...k,
-            [key as keyof IFilters]: [
-              filters[key as keyof typeof filters][0].value.toLowerCase(),
-            ],
-          }));
-        }
-      });
-    }
-  }, [filters]);
+  // useEffect(() => {
+  //   if (filters) {
+  //     Object.keys(filters).forEach((key) => {
+  //       if (filters[key as keyof typeof filters]?.length === 1) {
+  //         setSelectedFilters((s) => ({
+  //           ...s,
+  //           [key as keyof IFilters]: [
+  //             filters[key as keyof typeof filters][0].value.toLowerCase(),
+  //           ],
+  //         }));
+  //         setRequestKey((k) => ({
+  //           ...k,
+  //           [key as keyof IFilters]: [
+  //             filters[key as keyof typeof filters][0].value.toLowerCase(),
+  //           ],
+  //         }));
+  //       }
+  //     });
+  //   }
+  // }, [filters]);
 
   // Handle selecting all options where no selected filter react-select
   // useEffect(() => {
@@ -473,9 +639,64 @@ const Dashboard = () => {
     }
   };
 
+  // Handle toolbar select elements
+  const toolbarFilterChangeHandler = (newValue: any, actionMeta:any) => {
+    if (actionMeta.action === 'select-option') {
+      setSelectedMeasure(newValue.value);
+    }
+  };
+
+  // Change Handlers for threshold value
+  const thresholdValHandler = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) => {
+    if (
+      parseInt(e.currentTarget.value) > 0
+      && parseInt(e.currentTarget.value) <= 100
+    ) {
+      setThresholdVal(parseInt(e.currentTarget.value));
+    }
+    if (e.currentTarget.value === '') setThresholdVal(NaN);
+  };
+
   // Filter configs for react-select filters
   const filterConfigForSelect = {
     stringify: (option: any) => option.label,
+  };
+
+  // Ag grid On Ready Add pinned data
+  const totalRow = (readyEvent: GridReadyEvent) => {
+    const result: any = {};
+
+    Object.keys(sampleResObj).forEach((key) => {
+      result[key] = '';
+    });
+
+    // To handle per page data
+    // const currPage = readyEvent.api.paginationGetCurrentPage();
+    // const itemsPerPage = readyEvent.api.paginationGetPageSize();
+    // const startIndex = currPage * itemsPerPage;
+    // const endIndex = currPage * itemsPerPage + (itemsPerPage - 1);
+    // calcTotalCols.forEach((col) => {
+    //   result[col] = 0;
+    //   readyEvent.api.forEachNode((rowNode: RowNode) => {
+    //     const rowIndex = parseInt(rowNode.getRowIndexString());
+    //     if (rowIndex >= startIndex && rowIndex <= endIndex) {
+    //       result[col] += parseInt(rowNode.data[col]);
+    //     }
+    //   });
+    // });
+
+    // Tp Handle overall data
+    calcTotalCols.forEach((col) => {
+      result[col] = 0;
+      readyEvent.api.forEachNode((rowNode: RowNode) => {
+        result[col] += parseInt(rowNode.data[col]);
+      });
+    });
+
+    result.hcpcs_code_description = 'TOTAL';
+    return result;
   };
 
   return (
@@ -664,6 +885,7 @@ const Dashboard = () => {
                   requestedFilter={requestKey}
                   setSelectFilter={setSelectedFilters}
                   setReqFilter={setRequestKey}
+                  setFilterHistory={setFilterHistory}
                   onChange={filterChangeHandler}
                   onMenuClose={() => {
                     setMenuState('');
@@ -710,6 +932,7 @@ const Dashboard = () => {
                   requestedFilter={requestKey}
                   setSelectFilter={setSelectedFilters}
                   setReqFilter={setRequestKey}
+                  setFilterHistory={setFilterHistory}
                   onChange={filterChangeHandler}
                   onMenuClose={() => {
                     setMenuState('');
@@ -756,6 +979,7 @@ const Dashboard = () => {
                   requestedFilter={requestKey}
                   setSelectFilter={setSelectedFilters}
                   setReqFilter={setRequestKey}
+                  setFilterHistory={setFilterHistory}
                   onChange={filterChangeHandler}
                   onMenuClose={() => {
                     setMenuState('');
@@ -777,7 +1001,10 @@ const Dashboard = () => {
                 />
               </div>
               <div className="filter-container">
-                <label className="filter-label" htmlFor="hcpcs_code">
+                <label
+                  className="filter-label"
+                  htmlFor="hcpcs_code_description"
+                >
                   Hcpcs Code
                 </label>
                 <Select
@@ -787,10 +1014,10 @@ const Dashboard = () => {
                     ValueContainer,
                     MultiValue,
                   }}
-                  name="hcpcs_code"
+                  name="hcpcs_code_description"
                   value={
-                    filters?.hcpcs_code?.length > 0
-                      ? filters?.hcpcs_code?.filter((x: any) => selectedFilters.hcpcs_code?.includes(
+                    filters?.hcpcs_code_description?.length > 0
+                      ? filters?.hcpcs_code_description?.filter((x: any) => selectedFilters.hcpcs_code_description?.includes(
                         x.value.toLowerCase(),
                       ))
                       : null
@@ -802,13 +1029,14 @@ const Dashboard = () => {
                   requestedFilter={requestKey}
                   setSelectFilter={setSelectedFilters}
                   setReqFilter={setRequestKey}
+                  setFilterHistory={setFilterHistory}
                   onChange={filterChangeHandler}
                   onMenuClose={() => {
                     setMenuState('');
                     setSelectedFilters(requestKey);
                   }}
-                  onMenuOpen={() => setMenuState('hcpcs_code')}
-                  menuIsOpen={menuState === 'hcpcs_code'}
+                  onMenuOpen={() => setMenuState('hcpcs_code_description')}
+                  menuIsOpen={menuState === 'hcpcs_code_description'}
                   openMenuOnFocus
                   captureMenuScroll
                   openMenuOnClick
@@ -816,7 +1044,7 @@ const Dashboard = () => {
                   menuPlacement="auto"
                   className="filter-select"
                   placeholder="No Selection"
-                  options={filters?.hcpcs_code}
+                  options={filters?.hcpcs_code_description}
                   isMulti
                   hideSelectedOptions={false}
                   filterOption={createFilter(filterConfigForSelect)}
@@ -863,6 +1091,7 @@ const Dashboard = () => {
                   requestedFilter={requestKey}
                   setSelectFilter={setSelectedFilters}
                   setReqFilter={setRequestKey}
+                  setFilterHistory={setFilterHistory}
                   onChange={filterChangeHandler}
                   onMenuClose={() => {
                     setMenuState('');
@@ -909,6 +1138,7 @@ const Dashboard = () => {
                   requestedFilter={requestKey}
                   setSelectFilter={setSelectedFilters}
                   setReqFilter={setRequestKey}
+                  setFilterHistory={setFilterHistory}
                   onChange={filterChangeHandler}
                   onMenuClose={() => {
                     setMenuState('');
@@ -955,6 +1185,7 @@ const Dashboard = () => {
                   requestedFilter={requestKey}
                   setSelectFilter={setSelectedFilters}
                   setReqFilter={setRequestKey}
+                  setFilterHistory={setFilterHistory}
                   onChange={filterChangeHandler}
                   onMenuClose={() => {
                     setMenuState('');
@@ -1001,6 +1232,7 @@ const Dashboard = () => {
                   requestedFilter={requestKey}
                   setSelectFilter={setSelectedFilters}
                   setReqFilter={setRequestKey}
+                  setFilterHistory={setFilterHistory}
                   onChange={filterChangeHandler}
                   onMenuClose={() => {
                     setMenuState('');
@@ -1062,6 +1294,7 @@ const Dashboard = () => {
                   requestedFilter={requestKey}
                   setSelectFilter={setSelectedFilters}
                   setReqFilter={setRequestKey}
+                  setFilterHistory={setFilterHistory}
                   onChange={filterChangeHandler}
                   onMenuClose={() => {
                     setMenuState('');
@@ -1108,6 +1341,7 @@ const Dashboard = () => {
                   requestedFilter={requestKey}
                   setSelectFilter={setSelectedFilters}
                   setReqFilter={setRequestKey}
+                  setFilterHistory={setFilterHistory}
                   onChange={filterChangeHandler}
                   onMenuClose={() => {
                     setMenuState('');
@@ -1154,6 +1388,7 @@ const Dashboard = () => {
                   requestedFilter={requestKey}
                   setSelectFilter={setSelectedFilters}
                   setReqFilter={setRequestKey}
+                  setFilterHistory={setFilterHistory}
                   onChange={filterChangeHandler}
                   onMenuClose={() => {
                     setMenuState('');
@@ -1200,6 +1435,7 @@ const Dashboard = () => {
                   requestedFilter={requestKey}
                   setSelectFilter={setSelectedFilters}
                   setReqFilter={setRequestKey}
+                  setFilterHistory={setFilterHistory}
                   onChange={filterChangeHandler}
                   onMenuClose={() => {
                     setMenuState('');
@@ -1246,6 +1482,7 @@ const Dashboard = () => {
                   requestedFilter={requestKey}
                   setSelectFilter={setSelectedFilters}
                   setReqFilter={setRequestKey}
+                  setFilterHistory={setFilterHistory}
                   onChange={filterChangeHandler}
                   onMenuClose={() => {
                     setMenuState('');
@@ -1271,23 +1508,92 @@ const Dashboard = () => {
         </div>
         {/* Table section starts from here */}
         <div className="table-section">
-          <div className="table-toolbar">TABLE TOOLBAR</div>
+          {/* Table toolbar section */}
+          <div className="table-toolbar">
+            <div className="table-threshold-input">
+              <label htmlFor="threshold-input" className="threshold-label">
+                OP-ASC Fac Shift %
+              </label>
+              <TextField
+                size="small"
+                InputLabelProps={{ shrink: false }}
+                value={thresholdVal}
+                onChange={thresholdValHandler}
+                type="number"
+                name="threshold-input"
+                className="threshold-input"
+                inputProps={{ min: 1, max: 100 }}
+              />
+              {thresholdVal / 100 !== requestKey.threshold && (
+                <CancelOutlinedIcon
+                  color="error"
+                  sx={{ mr: 0.5 }}
+                  onClick={() => setThresholdVal(requestKey.threshold * 100)}
+                />
+              )}
+              {thresholdVal / 100 !== requestKey.threshold && (
+                <CheckCircleOutlineIcon
+                  color="success"
+                  onClick={() => {
+                    if (!isNaN(thresholdVal)) {
+                      setSelectedFilters((s) => ({
+                        ...s,
+                        threshold: thresholdVal / 100,
+                      }));
+                      setRequestKey((r) => ({
+                        ...r,
+                        threshold: thresholdVal / 100,
+                      }));
+                    }
+                  }}
+                />
+              )}
+            </div>
+            <div className="table-opt-input">
+              <label className="opt-label" htmlFor="type-of-service">
+                Select measure
+              </label>
+              <Select
+                name="type-of-service"
+                value={typeOfStat.find((x) => x.value === selectedMeasure)}
+                styles={selectStyleGeneralDropdown}
+                onChange={toolbarFilterChangeHandler}
+                closeMenuOnSelect
+                menuPlacement="bottom"
+                className="opt-select"
+                placeholder="No selection"
+                options={typeOfStat}
+                filterOption={createFilter(filterConfigForSelect)}
+              />
+            </div>
+          </div>
+          {/* Table from here */}
           <div className="ag-theme-material table-container">
-            <AgGridReact
-              // frameworkComponents={{
-              //   statusCellRenderer: (cellProps: any) => <span className="rva-custom-cell" style={{ background: DashboardAssetStatusColor[cellProps.value]?.background, color: DashboardAssetStatusColor[cellProps.value]?.text }}>{cellProps.value}</span>,
-              // }}
-              suppressCellFocus
-              suppressMovableColumns
-              suppressHorizontalScroll
-              headerHeight={53}
-              tooltipShowDelay={2000}
-              pagination
-              paginationPageSize={100}
-              rowData={hcpcsData}
-              columnDefs={columnDefs}
-              defaultColDef={{ sortable: true, resizable: true }}
-            />
+            {isValidating ? (
+              <Box sx={{
+                display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%',
+              }}
+              >
+                <CircularProgress color="success" />
+              </Box>
+            ) : (
+              <AgGridReact
+                suppressCellFocus
+                suppressMovableColumns
+                suppressHorizontalScroll
+                onGridReady={(e) => setTimeout(
+                  () => e.api.setPinnedTopRowData([totalRow(e)]),
+                  500,
+                )}
+                headerHeight={53}
+                tooltipShowDelay={2000}
+                pagination
+                paginationPageSize={100}
+                rowData={hcpcsData?.data}
+                columnDefs={columnDefs}
+                defaultColDef={{ sortable: true, resizable: true }}
+              />
+            )}
           </div>
         </div>
       </div>

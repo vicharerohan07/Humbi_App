@@ -3,6 +3,7 @@ interface IFilters {
   hcpcs_category: string[];
   hcpcs_sub_category: string[];
   hcpcs_code: string[];
+  hcpcs_code_description: string[];
   loc_state: string[];
   loc_county: string[];
   loc_city: string[];
@@ -12,6 +13,7 @@ interface IFilters {
   physician_npi: string[];
   physician_name: string[];
   physician_speciality: string[];
+  threshold: number;
 }
 
 export type { IFilters };

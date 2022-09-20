@@ -112,10 +112,58 @@
       .table-toolbar {
         display: flex;
         align-items: center;
-        justify-content: center;
+        flex-direction: row;
+        column-gap: 16px;
+        padding-inline: 16px;
+        justify-content: flex-end;
         height: 56px !important;
-      }
 
+        .table-threshold-input {
+          display: flex;
+          align-items: center;
+
+          .threshold-label {
+            font-size: 13px;
+            margin-right: 8px;
+          }
+
+          .threshold-input {
+            background-color: #fff;
+            border-radius: 4px;
+            margin-right: 8px;
+            input[type='number']::-webkit-inner-spin-button,
+            input[type='number']::-webkit-outer-spin-button {
+              -webkit-appearance: none;
+            }
+
+            &:hover .MuiOutlinedInput-root .MuiOutlinedInput-notchedOutline {
+              border-color: #126782 !important;
+            }
+
+            .MuiInputBase-input {
+              height: 20px;
+              width: 30px;
+              padding: 4px 8px;
+              font-size: 12px;
+            }
+          }
+        }
+
+        .table-opt-input {
+          display: flex;
+          flex-direction: row;
+          align-items: center;
+
+          .opt-label {
+            font-size: 13px;
+            margin-right: 8px;
+          }
+
+          .opt-select {
+            font-size: 0.833rem;
+          }
+        }
+      }
 
       .table-container {
         width: 100%;
