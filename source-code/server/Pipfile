@@ -8,6 +8,9 @@ fastapi = "*"
 uvicorn = "*"
 pandas = "*"
 pydantic = "*"
+redis = "*"
+pyarrow = "*"
+openpyxl = "*"
 
 [dev-packages]
 
