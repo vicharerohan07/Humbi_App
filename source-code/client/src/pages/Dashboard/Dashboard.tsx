@@ -31,6 +31,7 @@ import {
   ColDef,
   ColGroupDef,
   GridApi,
+  GridColumnsChangedEvent,
   GridReadyEvent,
   RowNode,
 } from 'ag-grid-community';
@@ -54,11 +55,11 @@ import {
 } from '../../utils/styles/selectStyles';
 
 // For Navbar Tabs and Settings Menu
-const pages = ['Hcpcs Analysis'];
+const pages = ['HCPCS Analysis'];
 const settings = ['Profile', 'Account', 'Logout'];
 const typeOfStat = [
-  { label: 'Place of service (Professional)', value: 0 },
-  { label: 'Place of service (Facility)', value: 1 },
+  { label: 'Professional', value: 0 },
+  { label: 'Facility', value: 1 },
 ];
 
 const sampleResObj: any = {
@@ -268,21 +269,48 @@ const axiosFetcher = (url: string, params: any) => axios
   .post(`${process.env.REACT_APP_API_URL}${url}`, params)
   .then((res) => res.data);
 
-const formatter = new Intl.NumberFormat('en-US', {
+const currencyFormatter = new Intl.NumberFormat('en-US', {
   style: 'currency',
   currency: 'USD',
   maximumFractionDigits: 0,
 });
 
+const numberFormatter = new Intl.NumberFormat('en-US');
+
 const calcTotalCols = [
-  'srvs_asc_fac',
-  'srvs_op_fac',
-  'total_savings',
-  'total',
-  'srvs_ip_phy',
-  'srvs_off',
-  'srvs_op_phy',
-  'srvs_asc_phy',
+  {
+    colId: 'srvs_asc_fac', headerName: 'ASC Services', billType: 1, type: 'normal',
+  },
+  {
+    colId: 'srvs_op_fac', headerName: 'OP Services', billType: 1, type: 'normal',
+  },
+  {
+    colId: 'total_savings',
+    headerName: 'Total Savings Possible',
+    billType: 1,
+    type: 'curr',
+  },
+  {
+    colId: 'total', headerName: 'Total Serives', billType: 0, type: 'normal',
+  },
+  {
+    colId: 'srvs_asc_phy',
+    headerName: 'ASC Services',
+    billType: 0,
+    type: 'normal',
+  },
+  {
+    colId: 'srvs_op_phy', headerName: 'OP Services', billType: 0, type: 'normal',
+  },
+  {
+    colId: 'srvs_ip_phy', headerName: 'IP Services', billType: 0, type: 'normal',
+  },
+  {
+    colId: 'srvs_off',
+    headerName: 'Office Services',
+    billType: 0,
+    type: 'normal',
+  },
 ];
 
 const Dashboard = () => {
@@ -342,6 +370,9 @@ const Dashboard = () => {
   // To maintain filter history
   const [filterHistory, setFilterHistory] = useState<string[]>([]);
 
+  // To maintain kpi array
+  const [kpi, setKpi] = useState<any[]>([]);
+
   // SWR fetch call for table data
   const { data: hcpcsData, isValidating } = useSWR(
     () => [HcpcsAPI.listByFilter, requestKey],
@@ -370,18 +401,25 @@ const Dashboard = () => {
   useEffect(() => {
     const common: (ColDef | ColGroupDef)[] = [
       {
-        headerName: 'Provider Information',
+        headerName: 'Procedure',
         headerClass: 'table-col-br',
         children: [
           {
             flex: 1.5,
             colId: 'hcpcs_code_description',
             field: 'hcpcs_code_description',
-            headerName: 'Hcpcs',
-            cellClass: 'table-cell-text-start',
+            headerName: 'HCPCS',
+            cellClass: 'table-cell-text-start table-col-br',
+            headerClass: 'table-header-text-center table-col-br',
             wrapText: true,
             autoHeight: true,
           },
+        ],
+      },
+      {
+        headerName: 'Provider Information',
+        headerClass: 'table-col-br',
+        children: [
           {
             flex: 0.9,
             colId: 'npi_doc',
@@ -401,7 +439,7 @@ const Dashboard = () => {
             flex: 1.5,
             colId: 'org_name',
             field: 'org_name',
-            headerName: 'Organisation',
+            headerName: 'Organization',
             headerClass: 'table-header-text-center',
             cellClass: 'table-cell-text-start',
             wrapText: true,
@@ -411,7 +449,7 @@ const Dashboard = () => {
             flex: 1.5,
             colId: 'doc_specialty',
             field: 'doc_specialty',
-            headerName: 'Speciality',
+            headerName: 'Sub-Speciality',
             headerClass: 'table-header-text-center',
             cellClass: 'table-cell-text-start',
             wrapText: true,
@@ -458,116 +496,175 @@ const Dashboard = () => {
           // },
         ],
       },
-      selectedMeasure === 0 ? {
-        headerName: 'Place Of Service (Professional )',
-        headerClass: 'table-col-br',
-        children: [
-          {
-            flex: 0.7,
-            colId: 'srvs_asc_phy',
-            field: 'srvs_asc_phy',
-            cellClass: 'table-col-br',
-            headerName: 'ASC',
-          },
-          {
-            flex: 0.7,
-            colId: 'srvs_ip_phy',
-            field: 'srvs_ip_phy',
-            cellClass: 'table-col-br',
-            headerName: 'IP',
-          },
-          {
-            flex: 0.7,
-            colId: 'srvs_op_phy',
-            field: 'srvs_op_phy',
-            cellClass: 'table-col-br',
-            headerName: 'OP',
-          },
-          {
-            flex: 0.7,
-            colId: 'srvs_off',
-            field: 'srvs_off',
-            cellClass: 'table-col-br',
-            headerName: 'OFF',
-          },
-          {
-            flex: 0.7,
-            colId: 'total',
-            field: 'total',
-            cellClass: 'table-col-br',
-            headerClass: 'table-col-br',
-            headerName: 'Total',
-            sort: 'desc',
-          },
-        ],
-      } : { hide: true },
-      selectedMeasure === 1 ? {
-        headerName: 'Place Of Service (Facility)',
-        children: [
-          {
-            flex: 0.5,
-            colId: 'srvs_op_fac',
-            field: 'srvs_op_fac',
-            cellClass: 'table-col-br',
-            headerName: 'OP',
-          },
-          {
-            flex: 0.75,
-            colId: 'op_fac_unit_cost',
-            valueGetter: (params: any) => (params?.data.op_fac_unit_cost === ''
-              ? ''
-              : formatter.format(params?.data.op_fac_unit_cost)),
-            comparator: (a: string, b: string) => {
-              const valA = parseInt(a.replace('$', '').replace(',', ''));
-              const valB = parseInt(b.replace('$', '').replace(',', ''));
-              if (valA === valB) return 0;
-              return valA > valB ? 1 : -1;
+      selectedMeasure === 0
+        ? {
+          headerName: 'Site Of Care (Professional )',
+          children: [
+            {
+              flex: 0.7,
+              colId: 'srvs_asc_phy',
+              valueGetter: (params: any) => (params?.data.srvs_asc_phy === ''
+                ? ''
+                : numberFormatter.format(params?.data.srvs_asc_phy)),
+              comparator: (a: string, b: string) => {
+                const valA = parseInt(a.replace('$', '').replace(',', ''));
+                const valB = parseInt(b.replace('$', '').replace(',', ''));
+                if (valA === valB) return 0;
+                return valA > valB ? 1 : -1;
+              },
+              cellClass: 'table-col-br',
+              headerName: 'ASC',
             },
-            cellClass: 'table-col-br',
-            headerName: 'OP Rate',
-            headerTooltip: 'OP Rate',
-          },
-          {
-            flex: 0.5,
-            colId: 'srvs_asc_fac',
-            field: 'srvs_asc_fac',
-            cellClass: 'table-col-br',
-            headerName: 'ASC',
-          },
-          {
-            flex: 0.75,
-            colId: 'asc_fac_unit_cost',
-            valueGetter: (params: any) => (params?.data.asc_fac_unit_cost === ''
-              ? ''
-              : formatter.format(params?.data.asc_fac_unit_cost)),
-            comparator: (a: string, b: string) => {
-              const valA = parseInt(a.replace('$', '').replace(',', ''));
-              const valB = parseInt(b.replace('$', '').replace(',', ''));
-              if (valA === valB) return 0;
-              return valA > valB ? 1 : -1;
+            {
+              flex: 0.7,
+              colId: 'srvs_ip_phy',
+              valueGetter: (params: any) => (params?.data.srvs_ip_phy === ''
+                ? ''
+                : numberFormatter.format(params?.data.srvs_ip_phy)),
+              comparator: (a: string, b: string) => {
+                const valA = parseInt(a.replace('$', '').replace(',', ''));
+                const valB = parseInt(b.replace('$', '').replace(',', ''));
+                if (valA === valB) return 0;
+                return valA > valB ? 1 : -1;
+              },
+              cellClass: 'table-col-br',
+              headerName: 'IP',
             },
-            cellClass: 'table-col-br',
-            headerName: 'ASC Rate',
-            headerTooltip: 'ASC Rate',
-          },
-          {
-            flex: 1,
-            colId: 'total_savings',
-            valueGetter: (params: any) => (params?.data.total_savings === ''
-              ? ''
-              : formatter.format(params?.data.total_savings)),
-            comparator: (a: string, b: string) => {
-              const valA = parseInt(a.replace('$', '').replace(',', ''));
-              const valB = parseInt(b.replace('$', '').replace(',', ''));
-              if (valA === valB) return 0;
-              return valA > valB ? 1 : -1;
+            {
+              flex: 0.7,
+              colId: 'srvs_op_phy',
+              valueGetter: (params: any) => (params?.data.srvs_op_phy === ''
+                ? ''
+                : numberFormatter.format(params?.data.srvs_op_phy)),
+              comparator: (a: string, b: string) => {
+                const valA = parseInt(a.replace('$', '').replace(',', ''));
+                const valB = parseInt(b.replace('$', '').replace(',', ''));
+                if (valA === valB) return 0;
+                return valA > valB ? 1 : -1;
+              },
+              cellClass: 'table-col-br',
+              headerName: 'OP',
             },
-            headerName: 'Savings',
-            headerTooltip: 'Total Savings',
-            sort: 'desc',
-          },
-        ],
-      } : { hide: true },
+            {
+              flex: 0.7,
+              colId: 'srvs_off',
+              valueGetter: (params: any) => (params?.data.srvs_off === ''
+                ? ''
+                : numberFormatter.format(params?.data.srvs_off)),
+              comparator: (a: string, b: string) => {
+                const valA = parseInt(a.replace('$', '').replace(',', ''));
+                const valB = parseInt(b.replace('$', '').replace(',', ''));
+                if (valA === valB) return 0;
+                return valA > valB ? 1 : -1;
+              },
+              cellClass: 'table-col-br',
+              headerName: 'OFF',
+            },
+            {
+              flex: 0.7,
+              colId: 'total',
+              valueGetter: (params: any) => (params?.data.total === ''
+                ? ''
+                : numberFormatter.format(params?.data.total)),
+              comparator: (a: string, b: string) => {
+                const valA = parseInt(a.replace('$', '').replace(',', ''));
+                const valB = parseInt(b.replace('$', '').replace(',', ''));
+                if (valA === valB) return 0;
+                return valA > valB ? 1 : -1;
+              },
+              cellClass: 'table-col-br',
+              headerClass: 'table-col-br',
+              headerName: 'Total',
+              sort: 'desc',
+            },
+          ],
+        }
+        : { hide: true },
+      selectedMeasure === 1
+        ? {
+          headerName: 'Site Of Care (Facility)',
+          children: [
+            {
+              flex: 0.5,
+              colId: 'srvs_op_fac',
+              valueGetter: (params: any) => (params?.data.srvs_op_fac === ''
+                ? ''
+                : numberFormatter.format(params?.data.srvs_op_fac)),
+              comparator: (a: string, b: string) => {
+                const valA = parseInt(a.replace('$', '').replace(',', ''));
+                const valB = parseInt(b.replace('$', '').replace(',', ''));
+                if (valA === valB) return 0;
+                return valA > valB ? 1 : -1;
+              },
+              cellClass: 'table-col-br',
+              headerName: 'OP',
+            },
+            {
+              flex: 0.75,
+              colId: 'op_fac_unit_cost',
+              valueGetter: (params: any) => (params?.data.op_fac_unit_cost === ''
+                ? ''
+                : currencyFormatter.format(params?.data.op_fac_unit_cost)),
+              comparator: (a: string, b: string) => {
+                const valA = parseInt(a.replace('$', '').replace(',', ''));
+                const valB = parseInt(b.replace('$', '').replace(',', ''));
+                if (valA === valB) return 0;
+                return valA > valB ? 1 : -1;
+              },
+              cellClass: 'table-col-br',
+              headerName: 'OP Rate',
+              headerTooltip: 'OP Rate',
+            },
+            {
+              flex: 0.5,
+              colId: 'srvs_asc_fac',
+              valueGetter: (params: any) => (params?.data.srvs_asc_fac === ''
+                ? ''
+                : numberFormatter.format(params?.data.srvs_asc_fac)),
+              comparator: (a: string, b: string) => {
+                const valA = parseInt(a.replace('$', '').replace(',', ''));
+                const valB = parseInt(b.replace('$', '').replace(',', ''));
+                if (valA === valB) return 0;
+                return valA > valB ? 1 : -1;
+              },
+              cellClass: 'table-col-br',
+              headerName: 'ASC',
+            },
+            {
+              flex: 0.75,
+              colId: 'asc_fac_unit_cost',
+              valueGetter: (params: any) => (params?.data.asc_fac_unit_cost === ''
+                ? ''
+                : currencyFormatter.format(params?.data.asc_fac_unit_cost)),
+              comparator: (a: string, b: string) => {
+                const valA = parseInt(a.replace('$', '').replace(',', ''));
+                const valB = parseInt(b.replace('$', '').replace(',', ''));
+                if (valA === valB) return 0;
+                return valA > valB ? 1 : -1;
+              },
+              cellClass: 'table-col-br',
+              headerName: 'ASC Rate',
+              headerTooltip: 'ASC Rate',
+            },
+            {
+              flex: 1,
+              colId: 'total_savings',
+              valueGetter: (params: any) => (params?.data.total_savings === ''
+                ? ''
+                : currencyFormatter.format(params?.data.total_savings)),
+              comparator: (a: string, b: string) => {
+                const valA = parseInt(a.replace('$', '').replace(',', ''));
+                const valB = parseInt(b.replace('$', '').replace(',', ''));
+                if (valA === valB) return 0;
+                return valA > valB ? 1 : -1;
+              },
+              headerName: 'Savings',
+              headerTooltip: 'Total Savings',
+              sort: 'desc',
+            },
+          ],
+        }
+        : { hide: true },
     ];
     setColumnDefs(common);
   }, [hcpcsData, selectedMeasure]);
@@ -640,7 +737,7 @@ const Dashboard = () => {
   };
 
   // Handle toolbar select elements
-  const toolbarFilterChangeHandler = (newValue: any, actionMeta:any) => {
+  const toolbarFilterChangeHandler = (newValue: any, actionMeta: any) => {
     if (actionMeta.action === 'select-option') {
       setSelectedMeasure(newValue.value);
     }
@@ -665,58 +762,45 @@ const Dashboard = () => {
   };
 
   // Ag grid On Ready Add pinned data
-  const totalRow = (readyEvent: GridReadyEvent) => {
-    const result: any = {};
-
-    Object.keys(sampleResObj).forEach((key) => {
-      result[key] = '';
-    });
-
-    // To handle per page data
-    // const currPage = readyEvent.api.paginationGetCurrentPage();
-    // const itemsPerPage = readyEvent.api.paginationGetPageSize();
-    // const startIndex = currPage * itemsPerPage;
-    // const endIndex = currPage * itemsPerPage + (itemsPerPage - 1);
-    // calcTotalCols.forEach((col) => {
-    //   result[col] = 0;
-    //   readyEvent.api.forEachNode((rowNode: RowNode) => {
-    //     const rowIndex = parseInt(rowNode.getRowIndexString());
-    //     if (rowIndex >= startIndex && rowIndex <= endIndex) {
-    //       result[col] += parseInt(rowNode.data[col]);
-    //     }
-    //   });
-    // });
+  const getKpis = (readyEvent: GridColumnsChangedEvent) => {
+    const tempArr: any = [];
 
     // Tp Handle overall data
     calcTotalCols.forEach((col) => {
-      result[col] = 0;
-      readyEvent.api.forEachNode((rowNode: RowNode) => {
-        result[col] += parseInt(rowNode.data[col]);
-      });
+      if (selectedMeasure === col.billType) {
+        let obj: any = 0;
+        readyEvent.api.forEachNode((rowNode: RowNode) => {
+          obj += parseInt(rowNode.data[col.colId]);
+        });
+        obj = col.type === 'normal' ? numberFormatter.format(obj) : currencyFormatter.format(obj);
+        tempArr.push({ name: col.headerName, value: obj });
+      }
     });
 
-    result.hcpcs_code_description = 'TOTAL';
-    return result;
+    setKpi(tempArr);
   };
+
+  // For Humbi Logo
+  const path = `${process.env.PUBLIC_URL}assets/`;
+  const image = 'logo.svg';
 
   return (
     <Container className="dashboard-container">
       {/* Navbar starts from here */}
       <AppBar position="static" className="navbar">
         <Toolbar disableGutters variant="dense">
-          <DonutSmallTwoToneIcon sx={{ display: 'flex', marginRight: 2 }} />
+          <img width={50} height={30} src={path + image} />
           <Typography
             variant="h6"
             noWrap
-            component="a"
-            href="/"
             sx={{
+              marginLeft: 1,
               marginRight: 2,
               display: 'flex',
               fontFamily: 'monospace',
               fontWeight: 700,
               letterSpacing: '.2rem',
-              color: 'inherit',
+              color: '#023047',
               textDecoration: 'none',
             }}
           >
@@ -728,73 +812,16 @@ const Dashboard = () => {
               flexGrow: 1,
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'space-between',
+              justifyContent: 'center',
+              textTransform: 'uppercase',
               pr: 3,
             }}
             className="tabbar"
           >
-            <Box
-              sx={{
-                display: 'flex',
-                flexDirection: 'row',
-              }}
-            >
-              {pages.map((page, index) => (
-                <Button
-                  key={page}
-                  className={index === 0 ? 'btn-selected' : ''}
-                  sx={{
-                    color: 'white',
-                    display: 'block',
-                  }}
-                >
-                  {page}
-                </Button>
-              ))}
-            </Box>
-            <Select
-              components={{ DropdownIndicator }}
-              value={null}
-              styles={selectStyleForSearch}
-              isDisabled={false}
-              menuIsOpen={false}
-              placeholder="Search"
-            />
+            Cardiology Site Of Care Optimization Tool
           </Box>
 
           <Box sx={{ flexGrow: 0 }}>
-            <IconButton
-              size="small"
-              color="inherit"
-              sx={{
-                mr: 1,
-              }}
-            >
-              <Badge variant="dot" color="warning" overlap="circular">
-                <MailIcon
-                  sx={{
-                    width: 24,
-                    height: 24,
-                  }}
-                />
-              </Badge>
-            </IconButton>
-            <IconButton
-              size="small"
-              color="inherit"
-              sx={{
-                mr: 2,
-              }}
-            >
-              <Badge variant="dot" overlap="circular" color="error">
-                <NotificationsIcon
-                  sx={{
-                    width: 24,
-                    height: 24,
-                  }}
-                />
-              </Badge>
-            </IconButton>
             <Tooltip title="Open settings">
               <IconButton
                 size="small"
@@ -856,12 +883,12 @@ const Dashboard = () => {
               expandIcon={<ExpandMoreIcon className="summary-icon" />}
               className="summary"
             >
-              <Typography>Hcpcs Filter</Typography>
+              <Typography sx={{ fontSize: 14 }}>HCPCS Filters</Typography>
             </AccordionSummary>
             <AccordionDetails className="detail">
               <div className="filter-container">
                 <label className="filter-label" htmlFor="hcpcs_class">
-                  Hcpcs Class
+                  HCPCS Class
                 </label>
                 <Select
                   components={{
@@ -1005,7 +1032,7 @@ const Dashboard = () => {
                   className="filter-label"
                   htmlFor="hcpcs_code_description"
                 >
-                  Hcpcs Code
+                  HCPCS Code
                 </label>
                 <Select
                   components={{
@@ -1062,7 +1089,7 @@ const Dashboard = () => {
               className="summary"
               expandIcon={<ExpandMoreIcon className="summary-icon" />}
             >
-              <Typography>Geographic Filter</Typography>
+              <Typography sx={{ fontSize: 14 }}>Geographic Filters</Typography>
             </AccordionSummary>
             <AccordionDetails className="detail">
               <div className="filter-container">
@@ -1265,12 +1292,12 @@ const Dashboard = () => {
               expandIcon={<ExpandMoreIcon className="summary-icon" />}
               className="summary"
             >
-              <Typography>Provider Filters</Typography>
+              <Typography sx={{ fontSize: 14 }}>Provider Filters</Typography>
             </AccordionSummary>
             <AccordionDetails className="detail">
               <div className="filter-container">
                 <label className="filter-label" htmlFor="org_npi">
-                  Npi Org
+                  NPI Org
                 </label>
                 <Select
                   components={{
@@ -1364,7 +1391,7 @@ const Dashboard = () => {
               </div>
               <div className="filter-container">
                 <label className="filter-label" htmlFor="physician_npi">
-                  Npi Doc
+                  NPI Doc
                 </label>
                 <Select
                   components={{
@@ -1510,69 +1537,85 @@ const Dashboard = () => {
         <div className="table-section">
           {/* Table toolbar section */}
           <div className="table-toolbar">
-            <div className="table-threshold-input">
-              <label htmlFor="threshold-input" className="threshold-label">
-                OP-ASC Fac Shift %
-              </label>
-              <TextField
-                size="small"
-                InputLabelProps={{ shrink: false }}
-                value={thresholdVal}
-                onChange={thresholdValHandler}
-                type="number"
-                name="threshold-input"
-                className="threshold-input"
-                inputProps={{ min: 1, max: 100 }}
-              />
-              {thresholdVal / 100 !== requestKey.threshold && (
-                <CancelOutlinedIcon
-                  color="error"
-                  sx={{ mr: 0.5 }}
-                  onClick={() => setThresholdVal(requestKey.threshold * 100)}
-                />
-              )}
-              {thresholdVal / 100 !== requestKey.threshold && (
-                <CheckCircleOutlineIcon
-                  color="success"
-                  onClick={() => {
-                    if (!isNaN(thresholdVal)) {
-                      setSelectedFilters((s) => ({
-                        ...s,
-                        threshold: thresholdVal / 100,
-                      }));
-                      setRequestKey((r) => ({
-                        ...r,
-                        threshold: thresholdVal / 100,
-                      }));
-                    }
-                  }}
-                />
-              )}
+            <div className="table-kpis">
+              {kpi?.map((element: any, index: number) => <div className="kpi-card" key={`kpi-card-${index}`}>
+                <div className="kpi-value-container">
+                  <p className="text">{element.value}</p>
+                </div>
+                <div className="kpi-headerName-container">
+                  <p className="text">{element.name}</p>
+                </div>
+              </div>)}
             </div>
-            <div className="table-opt-input">
-              <label className="opt-label" htmlFor="type-of-service">
-                Select measure
-              </label>
-              <Select
-                name="type-of-service"
-                value={typeOfStat.find((x) => x.value === selectedMeasure)}
-                styles={selectStyleGeneralDropdown}
-                onChange={toolbarFilterChangeHandler}
-                closeMenuOnSelect
-                menuPlacement="bottom"
-                className="opt-select"
-                placeholder="No selection"
-                options={typeOfStat}
-                filterOption={createFilter(filterConfigForSelect)}
-              />
+            <div className="table-inputs">
+              <div className="table-threshold-input">
+                <label htmlFor="threshold-input" className="threshold-label">
+                  OP-ASC Fac Shift %
+                </label>
+                <TextField
+                  size="small"
+                  InputLabelProps={{ shrink: false }}
+                  value={thresholdVal}
+                  onChange={thresholdValHandler}
+                  type="number"
+                  name="threshold-input"
+                  className="threshold-input"
+                  inputProps={{ min: 1, max: 100 }}
+                />
+                {thresholdVal / 100 !== requestKey.threshold && (
+                  <CancelOutlinedIcon
+                    color="error"
+                    sx={{ mr: 0.5, ml: 1 }}
+                    onClick={() => setThresholdVal(requestKey.threshold * 100)}
+                  />
+                )}
+                {thresholdVal / 100 !== requestKey.threshold && (
+                  <CheckCircleOutlineIcon
+                    color="success"
+                    onClick={() => {
+                      if (!isNaN(thresholdVal)) {
+                        setSelectedFilters((s) => ({
+                          ...s,
+                          threshold: thresholdVal / 100,
+                        }));
+                        setRequestKey((r) => ({
+                          ...r,
+                          threshold: thresholdVal / 100,
+                        }));
+                      }
+                    }}
+                  />
+                )}
+              </div>
+              <div className="table-opt-input">
+                <label className="opt-label" htmlFor="type-of-service">
+                  Select Bill Type
+                </label>
+                <Select
+                  name="type-of-service"
+                  value={typeOfStat.find((x) => x.value === selectedMeasure)}
+                  styles={selectStyleGeneralDropdown}
+                  onChange={toolbarFilterChangeHandler}
+                  closeMenuOnSelect
+                  menuPlacement="bottom"
+                  className="opt-select"
+                  placeholder="No selection"
+                  options={typeOfStat}
+                  filterOption={createFilter(filterConfigForSelect)}
+                />
+              </div>
             </div>
           </div>
           {/* Table from here */}
           <div className="ag-theme-material table-container">
             {isValidating ? (
-              <Box sx={{
-                display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%',
-              }}
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  height: '100%',
+                }}
               >
                 <CircularProgress color="success" />
               </Box>
@@ -1581,11 +1624,7 @@ const Dashboard = () => {
                 suppressCellFocus
                 suppressMovableColumns
                 suppressHorizontalScroll
-                onGridReady={(e) => setTimeout(
-                  () => e.api.setPinnedTopRowData([totalRow(e)]),
-                  500,
-                )}
-                headerHeight={53}
+                onGridColumnsChanged={(e) => setTimeout(() => getKpis(e), 500)}
                 tooltipShowDelay={2000}
                 pagination
                 paginationPageSize={100}

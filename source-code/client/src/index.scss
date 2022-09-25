@@ -60,20 +60,25 @@ code {
   overflow-x: hidden !important;
 }
 
+.ag-paging-panel {
+  background: #f4f4f4 !important;
+}
+
 .ag-theme-material {
   --ag-grid-size: 4px;
   --ag-list-item-height: 20px;
-  --ag-header-height: 50px;
-  --ag-header-background-color: #fafafa;
+  --ag-header-height: 36px !important;
+  --ag-header-background-color: #f4f4f4;
   --ag-row-hover-color: #b6d8e3;
-  --ag-odd-row-background-color: #fafafa;
+  --ag-odd-row-background-color: #f4f4f4;
+  --ag-background-color: #ffffff;
 }
 
 .ag-theme-alpine {
   --ag-grid-size: 4px;
   --ag-list-item-height: 20px;
-  --ag-header-height: 50px;
+  --ag-header-height: 36px;
   --ag-header-background-color: #fafafa;
   --ag-row-hover-color: #ffedd6;
-  --ag-odd-row-background-color: #fafafa;
+  --ag-odd-row-background-color: #f0efeb;
 }

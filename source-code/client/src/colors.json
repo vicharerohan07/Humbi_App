@@ -1,0 +1,28 @@
+{
+  "light-mode": {
+    "primary":"",
+    "primary-contrast-text":"",
+    "primary-alternative-text":"",
+    "primary-light":"",
+    "primary-light-text":"",
+    "primary-dark":"",
+    "primary-dark-text":"",
+    "primary-border":"",
+    "primary-hover":"",
+    "primary-selected":"",
+    "primary-focus":"",
+    "secondary":"",
+    "secondary-contrast-text":"",
+    "secondary-alternative-text":"",
+    "secondary-light":"",
+    "secondary-light-text":"",
+    "secondary-dark":"",
+    "secondary-dark-text":"",
+    "secondary-border":"",
+    "secondary-hover":"",
+    "secondary-selected":"",
+    "secondary-focus":""
+  },
+  "hybrid-mode": {},
+  "dark-mode": {}
+}

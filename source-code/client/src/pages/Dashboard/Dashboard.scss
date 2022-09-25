@@ -1,6 +1,6 @@
 .dashboard-container {
-  background-color: #023047;
-  // background-color: #023047;
+  background-color: #ffffff;
+  // background-color: #ffffff;
   display: flex !important;
   padding: 0px !important;
   max-width: 100% !important;
@@ -10,12 +10,21 @@
   .navbar {
     width: 100%;
     height: fit-content;
-    background-color: #023047;
-    // background-color: #023047;
+    background-color: #ffffff;
+    // background-color: #ffffff;
     padding-inline: 16px;
     box-shadow: none;
 
+    .MuiToolbar-root {
+      min-height: 56.5px !important;
+    }
+
     .tabbar {
+      color: #023047;
+      font-size: 1.2rem;
+      font-weight: 600;
+      letter-spacing: 0.1rem;
+
       .MuiButton-root {
         margin: 0px 8px 0px 0px !important;
         border-radius: 4px !important;
@@ -32,7 +41,7 @@
     display: flex;
     flex-direction: row;
     height: 100%;
-    padding: 10px 16px 16px 10px;
+    padding: 10px 16px 16px 16px;
     column-gap: 10px;
     overflow: hidden;
 
@@ -42,10 +51,10 @@
       min-width: 300px;
       max-height: 100%;
       border-radius: 4px !important;
-      background-color: #023047;
-      // background-color: #023047;
+      background-color: #ffffff;
+      // background-color: #ffffff;
       overflow-y: auto;
-      padding: 0px 12px 12px 12px;
+      padding: 0px 4px 0px 0px;
 
       .accordion {
         background-color: #126782;
@@ -103,7 +112,7 @@
     }
 
     .table-section {
-      min-width: calc(100% - 336px);
+      min-width: calc(100% - 314px);
       border-radius: 4px !important;
       background-color: #f0efeb;
       display: flex;
@@ -114,53 +123,105 @@
         align-items: center;
         flex-direction: row;
         column-gap: 16px;
-        padding-inline: 16px;
-        justify-content: flex-end;
-        height: 56px !important;
+        padding-inline: 8px;
+        justify-content: space-between;
+        height: 80px !important;
 
-        .table-threshold-input {
+        .table-kpis {
           display: flex;
-          align-items: center;
+          flex-direction: row;
+          column-gap: 20px;
+          align-self: center;
+          justify-content: flex-start;
 
-          .threshold-label {
-            font-size: 13px;
-            margin-right: 8px;
-          }
-
-          .threshold-input {
-            background-color: #fff;
+          .kpi-card {
+            display: flex;
+            flex-direction: column;
+            row-gap: 4px;
+            // background-color: var(--bg-color);
+            // color: var(--color);
+            background-color: #c4d7dc;
+            color: #65777b;
+            border: 1px solid;
             border-radius: 4px;
-            margin-right: 8px;
-            input[type='number']::-webkit-inner-spin-button,
-            input[type='number']::-webkit-outer-spin-button {
-              -webkit-appearance: none;
+            height: 60px !important;
+            align-items: flex-start;
+            justify-content: center;
+            min-width: 130px;
+            max-width: 130px;
+
+            .kpi-value-container {
+              padding-inline: 8px;
+              
+              .text {
+                margin: 0px;
+                font-size: 15px;
+                font-weight: 600;
+              }
             }
 
-            &:hover .MuiOutlinedInput-root .MuiOutlinedInput-notchedOutline {
-              border-color: #126782 !important;
-            }
+            .kpi-headerName-container {
+              padding-inline: 8px;
 
-            .MuiInputBase-input {
-              height: 20px;
-              width: 30px;
-              padding: 4px 8px;
-              font-size: 12px;
+              .text {
+                margin: 0px;
+                font-size: 11px;
+                text-transform: uppercase;
+              }
             }
           }
         }
 
-        .table-opt-input {
+        .table-inputs {
           display: flex;
-          flex-direction: row;
-          align-items: center;
+          flex-direction: column;
+          row-gap: 8px;
+          align-items: flex-end;
+          min-width: 240px;
 
-          .opt-label {
-            font-size: 13px;
-            margin-right: 8px;
+          .table-threshold-input {
+            display: flex;
+            align-items: center;
+
+            .threshold-label {
+              font-size: 13px;
+              margin-right: 8px;
+            }
+
+            .threshold-input {
+              background-color: #fff;
+              border-radius: 4px;
+              input[type='number']::-webkit-inner-spin-button,
+              input[type='number']::-webkit-outer-spin-button {
+                -webkit-appearance: none;
+              }
+
+              &:hover .MuiOutlinedInput-root .MuiOutlinedInput-notchedOutline {
+                border-color: #126782 !important;
+              }
+
+              .MuiInputBase-input {
+                height: 20px;
+                width: 30px;
+                padding: 4px 8px;
+                font-size: 12px;
+              }
+            }
           }
 
-          .opt-select {
-            font-size: 0.833rem;
+          .table-opt-input {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+
+            .opt-label {
+              font-size: 13px;
+              margin-right: 8px;
+            }
+
+            .opt-select {
+              font-size: 0.833rem;
+            }
           }
         }
       }
@@ -168,7 +229,7 @@
       .table-container {
         width: 100%;
         border-radius: 4px !important;
-        height: calc(100vh - 82.5px - 56px);
+        height: calc(100vh - 82.5px - 80px);
         border-top: 1px solid #e2e2e2;
 
         .table-col-br {

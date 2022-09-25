@@ -107,7 +107,7 @@ const selectStyleGeneralDropdown = {
   }),
   control: (base: any, state: any) => ({
     ...base,
-    width: 225,
+    width: 125,
     borderRadius: 4,
     marginRight: 0,
     fontSize: 12,
@@ -121,7 +121,7 @@ const selectStyleGeneralDropdown = {
   }),
   menu: (base: any) => ({
     ...base,
-    width: 225,
+    width: 125,
     borderRadius: 4,
     boxShadow: '0 0 0 1px #126782',
     hyphens: 'auto',
@@ -134,7 +134,7 @@ const selectStyleGeneralDropdown = {
   }),
   menuList: (base: any) => ({
     ...base,
-    width: 225,
+    width: 125,
     borderRadius: 4,
     fontSize: 12,
     paddingInline: 2,
